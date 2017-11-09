@@ -1,0 +1,32 @@
+{
+  "name": "@tradle/plugin-onfido",
+  "version": "1.0.0",
+  "description": "onfido plugin for Tradle's MyCloud",
+  "main": "index.js",
+  "scripts": {
+    "test": "node lib/test",
+    "precommit": "npm run copy-static-assets && npm test",
+    "copy-static-assets": "cp src/test/fixtures/*.json lib/test/fixtures/"
+  },
+  "keywords": [],
+  "author": "Mark Vayngrib <mark@tradle.io>",
+  "license": "MIT",
+  "dependencies": {
+    "@tradle/build-resource": "^2.9.1",
+    "@tradle/constants": "^2.1.0",
+    "@tradle/merge-models": "^2.1.0",
+    "@tradle/validate-model": "^2.4.3",
+    "@tradle/validate-resource": "^2.12.1",
+    "deep-equal": "^1.0.1",
+    "parse-data-uri": "^0.2.0"
+  },
+  "devDependencies": {
+    "@tradle/custom-models": "github:tradle/custom-models",
+    "@tradle/engine": "^5.4.0",
+    "@tradle/models": "github:tradle/models",
+    "sinon": "^4.1.2",
+    "source-map-support": "^0.5.0",
+    "tape": "^4.8.0",
+    "typeforce": "^1.11.7"
+  }
+}

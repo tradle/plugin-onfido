@@ -1,0 +1,26 @@
+export declare const getLatestFormByType: (application: any, type: string) => any;
+export declare const getLatestForm: (application: any, filter: Function) => any;
+export declare const parseStub: any;
+export declare const getPhotoID: (application: any) => any;
+export declare const getSelfie: (application: any) => any;
+export declare const firstProp: (obj: any) => string;
+export declare const parseReportURL: (url: any) => {
+    checkId: any;
+    reportId: any;
+};
+export declare const getOnfidoCheckIdKey: (checkId: any) => string;
+export declare const haveFormsToCreateApplicant: (application: any) => boolean;
+export declare const getFormsToCreateApplicant: (application: any) => any[];
+export declare const unique: (arr: any) => any[];
+export declare const isApplicantInfoForm: (type: any) => string;
+export declare const getApplicantProps: (forms: any) => {};
+export declare const normalizeDate: (date: any) => string;
+export declare const toYYYY_MM_DD_UTC: (date: any, separator: any) => string;
+export declare const find: (arr: any, filter: any) => any;
+export declare const equalish: (a: any, b: any) => boolean;
+export declare const stringifyAndNormalize: (val: any) => string;
+export declare const getExtension: (mimeType: any) => any;
+export declare const digest: (data: any) => any;
+export declare const hasTwoSides: (onfidoType: any) => boolean;
+export declare const pickNonNull: (obj: any) => {};
+export declare const ensureNoPendingCheck: (state: any) => void;
