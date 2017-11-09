@@ -4,7 +4,7 @@ import onfidoModels from './onfido-models'
 import Applicants from './applicants'
 import Checks from './checks'
 import {
-  Logger,
+  ILogger,
   IOnfidoComponent,
   PluginOpts,
   IncomingFormReq
@@ -15,7 +15,8 @@ import {
   IPROOV_SELFIE,
   SELFIE,
   PHOTO_ID,
-  APPLICANT
+  APPLICANT,
+  ONFIDO_WEBHOOK_KEY
 } from './constants'
 
 import Errors from './errors'
@@ -26,19 +27,19 @@ import {
   getPhotoID,
   firstProp,
   parseReportURL,
+  parseCheckURL,
   getOnfidoCheckIdKey,
   parseStub,
   getLatestFormByType,
   isApplicantInfoForm,
-  ensureNoPendingCheck
+  ensureNoPendingCheck,
+  addLinks
 } from './utils'
 
 // const REQUEST_EDITS_FOR = {
 //   [APPLICANT]: true,
 //   [SELFIE]: true
 // }
-
-const ONFIDO_WEBHOOK_KEY = 'onfido_webhook'
 
 export class Onfido implements IOnfidoComponent {
   public applicants:Applicants
@@ -47,7 +48,7 @@ export class Onfido implements IOnfidoComponent {
   public products:string[]
   public padApplicantName:boolean
   public formsToRequestCorrectionsFor:string[]
-  public logger:Logger
+  public logger:ILogger
   public onfidoAPI: any
   public productsAPI:any
   public apiUtils: APIUtils
@@ -76,29 +77,64 @@ export class Onfido implements IOnfidoComponent {
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
     // this.onFinished = onFinished
-    this.apiUtils = new APIUtils(opts)
+    this.apiUtils = new APIUtils(this)
     this.applicants = new Applicants(this)
     this.checks = new Checks(this)
   }
 
-  public ['onmessage:tradle.Form'] = (req):void|Promise<any> => {
+  public ['onmessage:tradle.Form'] = async (req):void|Promise<any> => {
     const { payload, type, application } = req
     if (!application) return
 
-    const { state, requestFor } = application
+    const { applicant, requestFor } = application
     if (!this.products.includes(requestFor)) {
       this.logger.debug(`ignoring product ${requestFor}`)
       return
     }
 
-    const { pendingCheck, status } = state
+    let state
+    let fresh
+    try {
+      const { permalink } = await this.bot.kv.get(getStateKey(application))
+      state = await this.apiUtils.getResource({
+        type: onfidoModels.state.id,
+        permalink
+      })
+    } catch (err) {
+      if (!err.notFound) throw err
+
+      fresh = true
+      state = buildResource({
+          models: this.models,
+          model: onfidoModels.state,
+        })
+        .set({
+          application,
+          applicant
+        })
+        .toJSON()
+    }
+
+    let copy = clone(state)
+    const { pendingCheck } = state
     // nothing can be done until a check completes
     if (pendingCheck) {
       this.logger.debug(`check is already pending, ignoring ${type}`)
       return
     }
 
-    return this.handleForm({ req, application, state, form: payload })
+    await this.handleForm({ req, application, state, form: payload })
+    if (fresh) {
+      await this.productsAPI.sign(state)
+      addLinks(current)
+      await Promise.all([
+        this.bot.kv.put(getStateKey(application), buildResource.permalink(state)),
+        this.productsAPI.save(state)
+      ])
+    } else if (!deepEqual(state, copy)) {
+      await this.productsAPI.version(state)
+      await this.productsAPI.save(state)
+    }
   }
 
   public handleOnfidoError = async ({ req, error }) => {
@@ -197,44 +233,39 @@ export class Onfido implements IOnfidoComponent {
     }
 
     let checkId
+    let applicantId
     if (resource_type === 'report') {
-      checkId = parseReportURL(object.href).checkId
+      checkId = parseReportURL(object).checkId
     } else if (resource_type === 'check') {
       checkId = object.id
+      applicantId = parseCheckURL(object)
     } else {
       this.logger.warn('unknown resource_type: ' + resource_type)
       return res.status(404).end()
     }
 
-    // const checkInfo = await this.bot.conf.get(getOnfidoCheckIdKey(checkId))
+    const loadSavedData = this.checks.lookupByCheckId(checkId)
+    const getApplicantId = applicantId
+      ? Promise.resolve(applicantId)
+      : loadSavedData.then(({ state }) => state.onfidoApplicant.id)
 
-    // try {
-    //   const complete = yield completeChecks.getAsync(checkId)
-    //   return res.status(200).end()
-    // } catch (err) {
-    // }
+    const getUpdatedCheck = this.checks.fetch({
+      applicantId: await getApplicantId,
+      checkId
+    })
 
-    // let current
-    // try {
-    //   current = yield getPendingCheckById(checkId)
-    // } catch (err) {
-    //   debug(err)
-    //   return res.status(err.notFound ? 404 : 500).end()
-    // }
+    const [savedData, update] = await Promise.all([
+      loadSavedData,
+      getUpdatedCheck
+    ])
 
-    // let update
-    // let applicant
-    // try {
-    //   const result = yield updatePendingCheck({ check: clone(current) })
-    //   update = result.check
-    //   applicant = result.applicant
-    // } catch (err) {
-    //   debug(err)
-    //   return res.status(500).end()
-    // }
-
-    // emitCompletedReports({ applicant, current, update })
-    // res.status(200).end()
+    const { application, state, check } = savedData
+    await this.checks.processCheck({
+      application,
+      state,
+      current: check,
+      update
+    })
   }
 
   private handleForm = async ({ req, application, state, form }: IncomingFormReq) => {
@@ -291,14 +322,15 @@ export class Onfido implements IOnfidoComponent {
     }
 
     try {
-      await this.createCheck({ state })
+      await this.createCheck({ application, state })
     } finally {
-      await this.bot.save(state)
+      await this.productsAPI.save(state)
     }
   }
 
-  private createCheck = async ({ state }) => {
+  private createCheck = async ({ application, state }) => {
     return await this.checks.create({
+      application,
       state,
       reports: onfidoModels.reportType.enum.map(({ id }) => id)
     })
@@ -306,3 +338,7 @@ export class Onfido implements IOnfidoComponent {
 }
 
 export default opts => new Onfido(opts)
+
+const getStateKey = application => {
+  return `${APPLICATION}_${application._permalink}_onfidoState`
+}

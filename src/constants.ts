@@ -5,6 +5,9 @@ const ADDRESS = 'tradle.OnfidoAddress'
 const APPLICANT = 'tradle.OnfidoApplicant'
 const EMAIL_ADDRESS = 'tradle.EmailAddress'
 const NAME = 'tradle.Name'
+const VERIFICATION = 'tradle.Verification'
+const APPLICATION = 'tradle.Application'
+const ONFIDO_WEBHOOK_KEY = 'onfido_webhook'
 
 export {
   IPROOV_SELFIE,
@@ -13,5 +16,8 @@ export {
   ADDRESS,
   APPLICANT,
   EMAIL_ADDRESS,
-  NAME
+  NAME,
+  VERIFICATION,
+  APPLICATION,
+  ONFIDO_WEBHOOK_KEY,
 }

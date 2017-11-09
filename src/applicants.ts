@@ -150,7 +150,7 @@ export default class Applicants implements IOnfidoComponent {
       })
 
       this.logger.debug('uploaded selfie')
-      state.selfie = form
+      this.apiUtils.setProps(state, { selfie: form })
       return true
     } catch (error) {
       // {
@@ -193,7 +193,7 @@ export default class Applicants implements IOnfidoComponent {
     this.logger.debug('uploading document')
     try {
       await this.onfidoAPI.applicants.uploadDocument(state.onfidoApplicant.id, document)
-      state.photoID = form
+      this.apiUtils.setProps(state, { photoID: form })
       return true
     } catch (error) {
       await this.main.handleOnfidoError({ req, error })

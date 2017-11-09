@@ -37,7 +37,7 @@ export type Photo = {
   filename: string
 }
 
-export interface ILogger = {
+export interface ILogger {
   log: Function
   info: Function
   warn: Function
@@ -77,4 +77,10 @@ export type IncomingFormReq = {
   application: any
   state: any
   form?: any
+}
+
+export type CheckMapping = {
+  application: string
+  state: string
+  check: string
 }

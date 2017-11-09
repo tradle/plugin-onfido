@@ -3,11 +3,13 @@ import { TYPE } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
 import onfidoModels from './onfido-models'
+import models from './models'
 
 import {
   IPROOV_SELFIE,
   SELFIE,
-  PHOTO_ID
+  PHOTO_ID,
+  VERIFICATION
 } from './constants'
 
 import Extractor from './extractor'
@@ -50,8 +52,15 @@ export const firstProp = obj => {
 }
 
 export const parseReportURL = url => {
-  const [match, checkId, reportId] = url.match(/checks\/([a-zA-Z0-9-_]+)\/reports\/([a-zA-Z0-9-_]+)/)
+  url = url.href || url
+  const [match, checkId, reportId] = url.match(/\/checks\/([a-zA-Z0-9-_]+)\/reports\/([a-zA-Z0-9-_]+)/)
   return { checkId, reportId }
+}
+
+export const parseCheckURL = url => {
+  url = url.href || url
+  const [match, applicantId, checkId] = url.match(/\/applicants\/([a-zA-Z0-9-_]+)\/checks\/([a-zA-Z0-9-_]+)/)
+  return { applicantId, checkId }
 }
 
 export const getOnfidoCheckIdKey = checkId => {
@@ -190,7 +199,7 @@ export const pickNonNull = obj => {
 }
 
 export const ensureNoPendingCheck = state => {
-  if (state.pendingCheck) {
+  if (state.checkStatus && getEnumValueId(state.checkStatus) === 'inprogress') {
     throw new Error('cannot upload selfie until pending check is resolved')
   }
 }
@@ -202,9 +211,64 @@ export const ensureNoPendingCheck = state => {
 //   })
 // }
 
-// export const getEnumValueId = (value) => {
-//   const type = (value.id || value).split('_')[0]
-//   const model = onfidoModels.all[type]
-//   const parsed = validateResource.utils.parseEnumValue({ model, value })
-//   return parsed.id
-// }
+export const getEnumValueId = (value) => {
+  const type = (value.id || value).split('_')[0]
+  const model = onfidoModels.all[type]
+  const parsed = validateResource.utils.parseEnumValue({ model, value })
+  return parsed.id
+}
+
+export const getCompletedReports = ({ current, update }) => {
+  if (!current) return update.reports.filter(isComplete)
+
+  return update.reports.filter(report => {
+    if (!isComplete(report)) return
+
+    const match = current.reportsResults.find(r => r.id === report.id)
+    if (match) return !isComplete(match)
+  })
+}
+
+export const createOnfidoVerification = ({ applicant, form, report }) => {
+  const aspect = report.name === 'facial_similarity' ? 'facial similarity' : 'authenticity'
+  const method = {
+    [TYPE]: 'tradle.APIBasedVerificationMethod',
+    api: {
+      [TYPE]: 'tradle.API',
+      name: 'onfido',
+      provider: {
+        id: 'tradle.Organization_57f54fd7a5dd777a541ca994f3155aaecd656bc05ac52e6163a2311d2d4b8b87_57f54fd7a5dd777a541ca994f3155aaecd656bc05ac52e6163a2311d2d4b8b87',
+        title: 'Onfido'
+      }
+    },
+    reference: [{ queryId: 'report:' + report.id }],
+    aspect,
+    rawData: report
+  }
+
+  const score = report && report.properties && report.properties.score
+  if (typeof score === 'number') {
+    method.confidence = score
+  }
+
+  return buildResource({
+      models,
+      model: VERIFICATION
+    })
+    .set({
+      document: form,
+      // documentOwner: applicant
+    })
+    .toJSON()
+}
+
+export const isComplete = (onfidoObject) => {
+  return (onfidoObject.status || '').indexOf('complete') !== -1
+}
+
+export const addLinks = (resource) => {
+  buildResource.setVirtual(resource, {
+    _link: buildResource.link(resource),
+    _permalink: buildResource.permalink(resource)
+  })
+}

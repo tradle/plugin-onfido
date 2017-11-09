@@ -5,4 +5,7 @@ declare const ADDRESS = "tradle.OnfidoAddress";
 declare const APPLICANT = "tradle.OnfidoApplicant";
 declare const EMAIL_ADDRESS = "tradle.EmailAddress";
 declare const NAME = "tradle.Name";
-export { IPROOV_SELFIE, SELFIE, PHOTO_ID, ADDRESS, APPLICANT, EMAIL_ADDRESS, NAME };
+declare const VERIFICATION = "tradle.Verification";
+declare const APPLICATION = "tradle.Application";
+declare const ONFIDO_WEBHOOK_KEY = "onfido_webhook";
+export { IPROOV_SELFIE, SELFIE, PHOTO_ID, ADDRESS, APPLICANT, EMAIL_ADDRESS, NAME, VERIFICATION, APPLICATION, ONFIDO_WEBHOOK_KEY };

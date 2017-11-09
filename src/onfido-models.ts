@@ -1,6 +1,24 @@
-const opStatus = {
+const opResult = {
   type: 'tradle.Model',
-  id: 'onfido.Status',
+  id: 'onfido.OpResult',
+  subClassOf: 'tradle.Enum',
+  title: 'Onfido Operation Status',
+  description: 'status of an Onfido operation: a report or a check',
+  properties: {
+    result: {
+      type: 'string'
+    }
+  },
+  enum: [
+    { id: 'clear', title: 'Success' },
+    { id: 'consider', title: 'Failure' },
+    { id: 'unidentified', title: 'No matches' },
+  ]
+}
+
+const checkStatus = {
+  type: 'tradle.Model',
+  id: 'onfido.CheckStatus',
   subClassOf: 'tradle.Enum',
   title: 'Onfido Operation Status',
   description: 'status of an Onfido operation: a report or a check',
@@ -10,10 +28,32 @@ const opStatus = {
     }
   },
   enum: [
-    { id: 'pending', title: 'Pending' },
-    { id: 'clear', title: 'Success' },
-    { id: 'consider', title: 'Failure' },
-    { id: 'error', title: 'Error' }
+    { id: 'inprogress', title: 'In progress' },
+    { id: 'awaitingapplicant', title: 'Awaiting applicant' },
+    { id: 'complete', title: 'Complete' },
+    { id: 'withdrawn', title: 'Withdrawn' },
+    { id: 'paused', title: 'Paused' },
+    { id: 'reopened', title: 'Reopened' }
+  ]
+}
+
+const reportStatus = {
+  type: 'tradle.Model',
+  id: 'onfido.ReportStatus',
+  subClassOf: 'tradle.Enum',
+  title: 'Onfido Report Status',
+  description: 'status of an Onfido report',
+  properties: {
+    status: {
+      type: 'string'
+    }
+  },
+  enum: [
+    { id: 'awaitingdata', title: 'Awaiting approval' },
+    { id: 'awaitingapproval', title: 'Awaiting approval' },
+    { id: 'complete', title: 'Complete' },
+    { id: 'withdrawn', title: 'Withdrawn' },
+    { id: 'paused', title: 'Paused' }
   ]
 }
 
@@ -29,7 +69,7 @@ const reportType = {
   },
   enum: [
     { id: 'document', title: 'Document' },
-    { id: 'face', title: 'Facial Similarity' },
+    { id: 'facialsimilarity', title: 'Facial Similarity' },
     { id: 'identity', title: 'Identity' }
   ]
 }
@@ -39,6 +79,10 @@ const check = {
   id: 'onfido.Check',
   title: 'Onfido Check',
   properties: {
+    rawData: {
+      type: 'object',
+      range: 'json'
+    },
     reportsOrdered: {
       type: 'array',
       inlined: true,
@@ -46,17 +90,21 @@ const check = {
         ref: reportType.id
       }
     },
-    // to avoid looking up reports
+    // // to avoid looking up reports
     reportsResults: {
       type: 'array',
       inlined: true,
       items: {
-        ref: opStatus.id
+        ref: reportStatus.id
       }
     },
     status: {
       type: 'object',
-      ref: opStatus.id
+      ref: checkStatus.id
+    },
+    result: {
+      type: 'object',
+      ref: opResult.id
     },
     checkId: {
       type: 'string'
@@ -99,10 +147,6 @@ const state = {
       type: 'object',
       ref: 'tradle.Application'
     },
-    status: {
-      type: 'object',
-      ref: opStatus.id
-    },
     onfidoApplicant: {
       type: 'object',
       range: 'json'
@@ -115,13 +159,13 @@ const state = {
       type: 'object',
       ref: 'tradle.PhotoID'
     },
-    pendingCheck: {
+    check: {
       type: 'object',
       ref: check.id
     },
-    pendingCheckStatus: {
+    checkStatus: {
       type: 'object',
-      ref: opStatus.id
+      ref: checkStatus.id
     },
     errors: {
       type: 'array',
@@ -132,16 +176,15 @@ const state = {
     },
     result: {
       type: 'object',
-      range: 'json',
-      description: 'raw result from Onfido'
+      ref: opResult.id
     }
   }
 }
 
 const stateStub = {
   type: 'tradle.Model',
-  id: 'onfido.ApplicationState',
-  title: 'Onfido Application State',
+  id: 'onfido.ApplicationStateStub',
+  title: 'Onfido Application State Stub',
   inlined: true,
   properties: {
     application: {
@@ -172,7 +215,9 @@ const stateStub = {
 }
 
 const models = {
-  opStatus,
+  reportStatus,
+  checkStatus,
+  opResult,
   reportType,
   check,
   // processStatus,

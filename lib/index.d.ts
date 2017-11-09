@@ -1,6 +1,6 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { Logger, IOnfidoComponent, PluginOpts } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts } from './types';
 import APIUtils from './api-utils';
 export declare class Onfido implements IOnfidoComponent {
     applicants: Applicants;
@@ -9,7 +9,7 @@ export declare class Onfido implements IOnfidoComponent {
     products: string[];
     padApplicantName: boolean;
     formsToRequestCorrectionsFor: string[];
-    logger: Logger;
+    logger: ILogger;
     onfidoAPI: any;
     productsAPI: any;
     apiUtils: APIUtils;

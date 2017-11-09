@@ -12,5 +12,6 @@ export default class APIUtils {
         address: any;
     }) => Promise<boolean>;
     stub: (resource: any) => any;
+    setProps: (resource: any, properties: any) => void;
     isTestMode(): boolean;
 }

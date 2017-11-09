@@ -8,6 +8,10 @@ export declare const parseReportURL: (url: any) => {
     checkId: any;
     reportId: any;
 };
+export declare const parseCheckURL: (url: any) => {
+    applicantId: any;
+    checkId: any;
+};
 export declare const getOnfidoCheckIdKey: (checkId: any) => string;
 export declare const haveFormsToCreateApplicant: (application: any) => boolean;
 export declare const getFormsToCreateApplicant: (application: any) => any[];
@@ -24,3 +28,15 @@ export declare const digest: (data: any) => any;
 export declare const hasTwoSides: (onfidoType: any) => boolean;
 export declare const pickNonNull: (obj: any) => {};
 export declare const ensureNoPendingCheck: (state: any) => void;
+export declare const getEnumValueId: (value: any) => any;
+export declare const getCompletedReports: ({current, update}: {
+    current: any;
+    update: any;
+}) => any;
+export declare const createOnfidoVerification: ({applicant, form, report}: {
+    applicant: any;
+    form: any;
+    report: any;
+}) => any;
+export declare const isComplete: (onfidoObject: any) => boolean;
+export declare const addLinks: (resource: any) => void;

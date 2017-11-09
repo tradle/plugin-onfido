@@ -1,5 +1,5 @@
 declare const models: {
-    opStatus: {
+    reportStatus: {
         type: string;
         id: string;
         subClassOf: string;
@@ -7,6 +7,38 @@ declare const models: {
         description: string;
         properties: {
             status: {
+                type: string;
+            };
+        };
+        enum: {
+            id: string;
+            title: string;
+        }[];
+    };
+    checkStatus: {
+        type: string;
+        id: string;
+        subClassOf: string;
+        title: string;
+        description: string;
+        properties: {
+            status: {
+                type: string;
+            };
+        };
+        enum: {
+            id: string;
+            title: string;
+        }[];
+    };
+    opResult: {
+        type: string;
+        id: string;
+        subClassOf: string;
+        title: string;
+        description: string;
+        properties: {
+            result: {
                 type: string;
             };
         };
@@ -35,6 +67,10 @@ declare const models: {
         id: string;
         title: string;
         properties: {
+            rawData: {
+                type: string;
+                range: string;
+            };
             reportsOrdered: {
                 type: string;
                 inlined: boolean;
@@ -50,6 +86,10 @@ declare const models: {
                 };
             };
             status: {
+                type: string;
+                ref: string;
+            };
+            result: {
                 type: string;
                 ref: string;
             };
@@ -71,10 +111,6 @@ declare const models: {
                 type: string;
                 ref: string;
             };
-            status: {
-                type: string;
-                ref: string;
-            };
             onfidoApplicant: {
                 type: string;
                 range: string;
@@ -87,11 +123,11 @@ declare const models: {
                 type: string;
                 ref: string;
             };
-            pendingCheck: {
+            check: {
                 type: string;
                 ref: string;
             };
-            pendingCheckStatus: {
+            checkStatus: {
                 type: string;
                 ref: string;
             };
@@ -104,8 +140,7 @@ declare const models: {
             };
             result: {
                 type: string;
-                range: string;
-                description: string;
+                ref: string;
             };
         };
     };

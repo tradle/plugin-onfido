@@ -72,6 +72,14 @@ export default class APIUtils {
     })
   }
 
+  public setProps = (resource, properties) => {
+    buildResource.set({
+      models: this.models,
+      resource,
+      properties
+    })
+  }
+
   public isTestMode () {
     return this.onfidoAPI.mode === 'test'
   }
