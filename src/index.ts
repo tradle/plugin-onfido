@@ -1,3 +1,6 @@
+import deepEqual = require('deep-equal')
+import clone = require('clone')
+import buildResource = require('@tradle/build-resource')
 import { TYPE } from '@tradle/constants'
 import mergeModels = require('@tradle/merge-models')
 import onfidoModels from './onfido-models'
@@ -87,7 +90,7 @@ export class Onfido implements IOnfidoComponent {
     this.checks = new Checks(this)
   }
 
-  public ['onmessage:tradle.Form'] = async (req):void|Promise<any> => {
+  public ['onmessage:tradle.Form'] = async (req):Promise<any|void> => {
     const { payload, type, application } = req
     if (!application) return
 
@@ -121,24 +124,23 @@ export class Onfido implements IOnfidoComponent {
     }
 
     let copy = clone(state)
-    const { pendingCheck } = state
+    const { check } = state
     // nothing can be done until a check completes
-    if (pendingCheck) {
+    if (check) {
       this.logger.debug(`check is already pending, ignoring ${type}`)
       return
     }
 
     await this.handleForm({ req, application, state, form: payload })
     if (fresh) {
-      await this.productsAPI.sign(state)
-      addLinks(current)
+      await this.bot.sign(state)
+      addLinks(state)
       await Promise.all([
-        this.bot.kv.put(getStateKey(application), buildResource.permalink(state)),
-        this.productsAPI.save(state)
+        this.bot.kv.put(getStateKey(application), state._permalink),
+        this.bot.save(state)
       ])
     } else if (!deepEqual(state, copy)) {
-      await this.productsAPI.version(state)
-      await this.productsAPI.save(state)
+      await this.bot.versionAndSave(state)
     }
   }
 
@@ -211,8 +213,9 @@ export class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ application, state, reports }) => {
+  public createCheck = async ({ req, application, state, reports }) => {
     return await this.checks.create({
+      req,
       application,
       state,
       reports: reports || onfidoModels.reportType.enum.map(({ id }) => id)
@@ -349,9 +352,9 @@ export class Onfido implements IOnfidoComponent {
     }
 
     try {
-      await this.createCheck({ application, state })
+      await this.createCheck({ req, application, state })
     } finally {
-      await this.productsAPI.save(state)
+      await this.bot.save(state)
     }
   }
 }

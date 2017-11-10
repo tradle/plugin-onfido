@@ -16,12 +16,13 @@ export declare class Onfido implements IOnfidoComponent {
     apiUtils: APIUtils;
     models: any;
     constructor(opts: PluginOpts);
-    ['onmessage:tradle.Form']: (req: any) => void | Promise<any>;
+    ['onmessage:tradle.Form']: (req: any) => Promise<any>;
     handleOnfidoError: ({req, error}: {
         req: any;
         error: any;
     }) => Promise<boolean>;
-    createCheck: ({application, state, reports}: {
+    createCheck: ({req, application, state, reports}: {
+        req: any;
         application: any;
         state: any;
         reports: any;

@@ -136,10 +136,10 @@ test('common case', loudAsync(async (t) => {
     })
 
   await Promise.all([
-    onfido.productsAPI.save(application),
-    onfido.productsAPI.save(state),
+    onfido.bot.save(application),
+    onfido.bot.save(state),
   ].concat(Object.keys(forms).map(name => {
-    return onfido.productsAPI.save(forms[name])
+    return onfido.bot.save(forms[name])
   })))
 
   // not enough info

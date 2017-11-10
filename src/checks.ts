@@ -1,4 +1,6 @@
 import pick = require('object.pick')
+import clone = require('clone')
+import deepEqual = require('deep-equal')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
 import { Onfido } from './'
@@ -57,7 +59,8 @@ export default class Checks implements IOnfidoComponent {
     this.models = main.models
   }
 
-  public create = async ({ application, state, reports }: {
+  public create = async ({ req, application, state, reports }: {
+    req,
     application: any
     state: any
     reports: string[]
@@ -94,7 +97,7 @@ export default class Checks implements IOnfidoComponent {
       .toJSON()
 
 
-    await this.processCheck({ application, state, current, update: check })
+    await this.processCheck({ req, application, state, current, update: check })
     await this.saveCheckMapping({
       check: current,
       state
@@ -158,24 +161,27 @@ export default class Checks implements IOnfidoComponent {
     // const reports = getCompletedReports({ current, update })
     const reports = update.reports
     if (reports.length) {
+      let willAutoSave = !!req
+      const appCopy = clone(application)
       await Promise.all(reports.map(report => {
         return this.processReport({ req, application, state, check: current, report })
       }))
+
+      if (!willAutoSave && !deepEqual(application, appCopy)) {
+        await this.productsAPI.saveNewVersionOfApplication({ application })
+      }
     }
 
     if (current[SIG]) {
-      await this.productsAPI.version(current)
+      current = await this.bot.versionAndSave(current)
     } else {
-      await this.productsAPI.sign(current)
-      addLinks(current)
+      await this.bot.signAndSave(current)
     }
 
     this.apiUtils.setProps(state, {
       check: current,
       checkStatus: current.status
     })
-
-    await this.productsAPI.save(current)
 
     // emitCompletedReports({ applicant, current, update })
   }
@@ -208,7 +214,7 @@ export default class Checks implements IOnfidoComponent {
       await this.productsAPI.importVerification({
         req,
         application,
-        verification: await this.productsAPI.sign(verification)
+        verification: await this.bot.sign(verification)
       })
     }
   }

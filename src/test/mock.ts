@@ -9,7 +9,8 @@ import createPlugin from '../'
 import models from '../models'
 import ConsoleLogger from './console-logger'
 import { Onfido } from '../'
-import { ONFIDO_WEBHOOK_KEY } from '../constants'
+import { addLinks } from '../utils'
+import { DEFAULT_WEBHOOK_KEY } from '../constants'
 
 const keyValueStore = () => {
   const store = {}
@@ -17,6 +18,7 @@ const keyValueStore = () => {
     get: async (key) => {
       if (key in store) return store[key]
 
+      debugger
       throw new Error(`key ${key} not found`)
     },
     put: async (key, value) => {
@@ -35,6 +37,26 @@ export default {
 
 function mockClient (opts) {
   const onfidoAPI = mockAPI()
+  const bot = mockBot()
+  return createPlugin({
+    logger: new ConsoleLogger(),
+    onfidoAPI,
+    productsAPI: {
+      models: {
+        all: models
+      },
+      importVerification: (verification) => {
+        throw new Error('mock me')
+      },
+      bot,
+      saveNewVersionOfApplication: async ({ application }) => {
+        return await bot.versionAndSave(application)
+      }
+    }
+  })
+}
+
+function mockBot () {
   const db = {}
   const getKey = resource => {
     const type = resource[TYPE]
@@ -51,42 +73,49 @@ function mockClient (opts) {
     return resource
   }
 
-  return createPlugin({
-    logger: new ConsoleLogger(),
-    onfidoAPI,
-    productsAPI: {
-      models: {
-        all: models
-      },
-      sign,
-      save: async (resource) => {
-        db[getKey(resource)] = resource
-      },
-      version: async (resource) => {
-        buildResource.version(resource)
-        return sign(resource)
-      },
-      importVerification: (verification) => {
-        throw new Error('mock me')
-      },
-      bot: {
-        kv: keyValueStore(),
-        conf: (function () {
-          const store = keyValueStore()
-          store.put(ONFIDO_WEBHOOK_KEY, { token: 'testtoken' })
-          return store
-        })(),
-        db: {
-          get: async (props) => {
-            const val = db[getKey(props)]
-            if (val) return val
+  const save = async (resource) => {
+    db[getKey(resource)] = resource
+  }
 
-            throw new Error(`not found: ${JSON.stringify(props)}`)
-          }
-        }
+  const signAndSave = async (resource) => {
+    await sign(resource)
+    addLinks(resource)
+    await save(resource)
+    return resource
+  }
+
+  const version = async (resource) => {
+    buildResource.version(resource)
+    return sign(resource)
+  }
+
+  const versionAndSave = async (resource) => {
+    const ver = await version(resource)
+    await save(ver)
+    return ver
+  }
+
+  return {
+    sign,
+    save,
+    signAndSave,
+    version,
+    versionAndSave,
+    kv: keyValueStore(),
+    conf: (function () {
+      const store = keyValueStore()
+      store.put(DEFAULT_WEBHOOK_KEY, { token: 'testtoken' })
+      return store
+    })(),
+    db: {
+      get: async (props) => {
+        const val = db[getKey(props)]
+        if (val) return val
+
+        throw new Error(`not found: ${JSON.stringify(props)}`)
       }
     }
-  })
+  }
 }
 
 function mockAPI () {

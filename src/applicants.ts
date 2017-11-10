@@ -31,7 +31,6 @@ import {
 } from './constants'
 
 export default class Applicants implements IOnfidoComponent {
-  public productsAPI: any
   public bot: any
   public onfidoAPI: any
   public logger: ILogger
@@ -41,7 +40,6 @@ export default class Applicants implements IOnfidoComponent {
   private main: Onfido
   constructor (main:Onfido) {
     this.models = main.models
-    this.productsAPI = main.productsAPI
     this.bot = main.productsAPI.bot
     this.onfidoAPI = main.onfidoAPI
     this.logger = main.logger

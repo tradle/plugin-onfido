@@ -9,7 +9,8 @@ export default class Checks implements IOnfidoComponent {
     apiUtils: APIUtils;
     models: any;
     constructor(main: Onfido);
-    create: ({application, state, reports}: {
+    create: ({req, application, state, reports}: {
+        req: any;
         application: any;
         state: any;
         reports: string[];
