@@ -53,6 +53,7 @@ export type PluginOpts = {
   formsToRequestCorrectionsFor: string[]
   // onFinished: Function
   padApplicantName?: boolean
+  webhookKey?: string
 }
 
 export interface IOnfidoComponent {

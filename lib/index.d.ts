@@ -9,6 +9,7 @@ export declare class Onfido implements IOnfidoComponent {
     products: string[];
     padApplicantName: boolean;
     formsToRequestCorrectionsFor: string[];
+    webhookKey: string;
     logger: ILogger;
     onfidoAPI: any;
     productsAPI: any;
@@ -20,6 +21,15 @@ export declare class Onfido implements IOnfidoComponent {
         req: any;
         error: any;
     }) => Promise<boolean>;
+    createCheck: ({application, state, reports}: {
+        application: any;
+        state: any;
+        reports: any;
+    }) => Promise<any>;
+    registerWebhook: ({url, events}: {
+        url: string;
+        events?: string[];
+    }) => Promise<any>;
     processWebhookEvent: ({req, res, desiredResult}: {
         req: any;
         res: any;
@@ -27,7 +37,6 @@ export declare class Onfido implements IOnfidoComponent {
     }) => Promise<any>;
     private handleForm;
     private updateApplicantAndCreateCheck;
-    private createCheck;
 }
 declare const _default: (opts: any) => Onfido;
 export default _default;

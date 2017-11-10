@@ -7,7 +7,21 @@ const EMAIL_ADDRESS = 'tradle.EmailAddress'
 const NAME = 'tradle.Name'
 const VERIFICATION = 'tradle.Verification'
 const APPLICATION = 'tradle.Application'
-const ONFIDO_WEBHOOK_KEY = 'onfido_webhook'
+const DEFAULT_WEBHOOK_KEY = 'onfido_webhook'
+const ONFIDO_WEBHOOK_EVENTS = [
+  'report.completed',
+  'report.withdrawn',
+  'check.completed',
+  'check.started',
+  'check.form_opened',
+  'check.form_completed'
+]
+
+const DEFAULT_WEBHOOK_EVENTS = [
+  'report.completed',
+  'report.withdrawn',
+  'check.completed'
+]
 
 export {
   IPROOV_SELFIE,
@@ -19,5 +33,7 @@ export {
   NAME,
   VERIFICATION,
   APPLICATION,
-  ONFIDO_WEBHOOK_KEY,
+  DEFAULT_WEBHOOK_KEY,
+  ONFIDO_WEBHOOK_EVENTS,
+  DEFAULT_WEBHOOK_EVENTS
 }

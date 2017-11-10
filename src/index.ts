@@ -16,7 +16,9 @@ import {
   SELFIE,
   PHOTO_ID,
   APPLICANT,
-  ONFIDO_WEBHOOK_KEY
+  DEFAULT_WEBHOOK_KEY,
+  ONFIDO_WEBHOOK_EVENTS,
+  DEFAULT_WEBHOOK_EVENTS
 } from './constants'
 
 import Errors from './errors'
@@ -48,6 +50,7 @@ export class Onfido implements IOnfidoComponent {
   public products:string[]
   public padApplicantName:boolean
   public formsToRequestCorrectionsFor:string[]
+  public webhookKey:string
   public logger:ILogger
   public onfidoAPI: any
   public productsAPI:any
@@ -61,6 +64,7 @@ export class Onfido implements IOnfidoComponent {
       productsAPI,
       padApplicantName,
       formsToRequestCorrectionsFor,
+      webhookKey=DEFAULT_WEBHOOK_KEY
       // onFinished
     } = opts
 
@@ -76,6 +80,7 @@ export class Onfido implements IOnfidoComponent {
 
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
+    this.webhookKey = webhookKey
     // this.onFinished = onFinished
     this.apiUtils = new APIUtils(this)
     this.applicants = new Applicants(this)
@@ -206,13 +211,35 @@ export class Onfido implements IOnfidoComponent {
     return false
   }
 
+  public createCheck = async ({ application, state, reports }) => {
+    return await this.checks.create({
+      application,
+      state,
+      reports: reports || onfidoModels.reportType.enum.map(({ id }) => id)
+    })
+  }
+
+  public registerWebhook = async ({ url, events=DEFAULT_WEBHOOK_EVENTS }: {
+    url:string,
+    events?:string[]
+  }) => {
+    events.forEach(event => {
+      if (!ONFIDO_WEBHOOK_EVENTS.includes(event)) {
+        throw new Error(`invalid webhook event: ${event}`)
+      }
+    })
+
+    const webhook = await this.onfidoAPI.webhooks.register({ url, events })
+    await this.bot.conf.put(this.webhookKey, webhook)
+    return webhook
+  }
+
   public processWebhookEvent = async ({ req, res, desiredResult }) => {
-    const url = 'https://' + req.get('host') + req.originalUrl
     let webhook
     try {
-      webhook = await this.bot.conf.get(ONFIDO_WEBHOOK_KEY)
+      webhook = await this.bot.conf.get(this.webhookKey)
     } catch (err) {
-      throw new Error('webhook not found for url: ' + url)
+      throw new Error('webhook not found')
     }
 
     let event
@@ -326,14 +353,6 @@ export class Onfido implements IOnfidoComponent {
     } finally {
       await this.productsAPI.save(state)
     }
-  }
-
-  private createCheck = async ({ application, state }) => {
-    return await this.checks.create({
-      application,
-      state,
-      reports: onfidoModels.reportType.enum.map(({ id }) => id)
-    })
   }
 }
 
