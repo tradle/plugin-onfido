@@ -4,6 +4,7 @@ import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
 import onfidoModels from './onfido-models'
 import models from './models'
+import { ApplicantProps } from './types'
 
 import {
   IPROOV_SELFIE,
@@ -99,7 +100,7 @@ export const isApplicantInfoForm = type => {
   return Object.keys(Extractor).find(propertySet => Extractor[propertySet][type])
 }
 
-export const getApplicantProps = forms => {
+export const getApplicantProps = (forms):ApplicantProps => {
   const {
     name,
     address,
@@ -113,11 +114,12 @@ export const getApplicantProps = forms => {
     return result
   }, {})
 
-  return pickNonNull({
-    name,
-    addresses: address && [address],
-    dob
-  })
+  const props:ApplicantProps = {}
+  if (name) Object.assign(props, name)
+  if (dob) props.dob = dob
+  if (address) props.addresses = [address]
+
+  return props
 }
 
 export const normalizeDate = (date) => {

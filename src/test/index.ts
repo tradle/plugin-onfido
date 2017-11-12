@@ -30,8 +30,23 @@ for (let name in forms) {
   formStubs[name] = toStub(forms[name])
 }
 
-test('common case', loudAsync(async (t) => {
-  const onfido = mock.client()
+const TEST_PRODUCT = {
+  type: 'tradle.Model',
+  id: 'test.Product',
+  title: 'test product',
+  subClassOf: 'tradle.FinancialProduct',
+  forms: [
+    'tradle.Name',
+    'tradle.PhotoID',
+    'tradle.OnfidoApplicant',
+  ],
+  properties: {}
+}
+
+const setup = () => {
+  const onfido = mock.client({
+    products: [TEST_PRODUCT.id]
+  })
 
   let i = 0
   const applicantInfo = newApplicantInfo()
@@ -39,6 +54,7 @@ test('common case', loudAsync(async (t) => {
     [TYPE]: APPLICATION,
     [SIG]: mock.sig(),
     applicant: applicantInfo.stub,
+    requestFor: TEST_PRODUCT.id,
     forms: [
       formStubs.name
     ]
@@ -49,8 +65,7 @@ test('common case', loudAsync(async (t) => {
   const check = fixtures.checks['0cc317bc-00a5-4e4b-8085-4485fceab85a'][1]
   const pendingCheck = toPendingCheck(check)
 
-  let checkResource
-  let state = {
+  const state = {
     [TYPE]: onfidoModels.state.id,
     [SIG]: mock.sig(),
     applicant: applicantInfo.stub,
@@ -61,6 +76,23 @@ test('common case', loudAsync(async (t) => {
   }
 
   addLinks(state)
+  return {
+    onfido,
+    application,
+    state,
+    check,
+    pendingCheck,
+  }
+}
+
+test('common case', loudAsync(async (t) => {
+  const {
+    onfido,
+    state,
+    application,
+    check,
+    pendingCheck
+  } = setup()
 
   const uploadLivePhotoStub = sinon.stub(onfido.onfidoAPI.applicants, 'uploadLivePhoto')
     .callsFake(async (id, photo) => {
@@ -107,7 +139,8 @@ test('common case', loudAsync(async (t) => {
 
   const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create').callsFake(props => {
     t.same(props, {
-      name: { first_name: 'Moog', last_name: 'Soni' },
+      first_name: 'Moog',
+      last_name: 'Soni',
       addresses: [{
         country: 'GBR',
         building_number: '96',

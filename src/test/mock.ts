@@ -18,8 +18,7 @@ const keyValueStore = () => {
     get: async (key) => {
       if (key in store) return store[key]
 
-      debugger
-      throw new Error(`key ${key} not found`)
+      throw notFoundError(`key ${key} not found`)
     },
     put: async (key, value) => {
       store[key] = value
@@ -35,7 +34,7 @@ export default {
   request: mockRequest
 }
 
-function mockClient (opts) {
+function mockClient (opts={}) {
   const onfidoAPI = mockAPI()
   const bot = mockBot()
   return createPlugin({
@@ -52,7 +51,8 @@ function mockClient (opts) {
       saveNewVersionOfApplication: async ({ application }) => {
         return await bot.versionAndSave(application)
       }
-    }
+    },
+    ...opts
   })
 }
 
@@ -112,7 +112,7 @@ function mockBot () {
         const val = db[getKey(props)]
         if (val) return val
 
-        throw new Error(`not found: ${JSON.stringify(props)}`)
+        throw notFoundError(`not found: ${JSON.stringify(props)}`)
       }
     }
   }
@@ -189,4 +189,10 @@ function mockRequest () {
     get: prop => `mock value for ${prop}`,
     originalUrl: 'mock original url'
   }
+}
+
+function notFoundError (message) {
+  const err = new Error(message)
+  err.name = 'NotFound'
+  return err
 }

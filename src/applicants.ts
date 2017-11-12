@@ -4,7 +4,7 @@ import { TYPE } from '@tradle/constants'
 import onfidoModels from './onfido-models'
 import {
   ApplicantProps,
-  Logger
+  ILogger
 } from './types'
 
 import {
@@ -20,7 +20,7 @@ import {
 import APIUtils from './api-utils'
 import {
   IOnfidoComponent,
-  IncomingFormReq
+  OnfidoState
 } from './types'
 
 import { Onfido } from './'
@@ -47,7 +47,7 @@ export default class Applicants implements IOnfidoComponent {
     this.padApplicantName = main.padApplicantName
   }
 
-  public createOrUpdate = async ({ req, application, state, form }: IncomingFormReq) => {
+  public createOrUpdate = async ({ req, application, state, form }: OnfidoState) => {
     if (!state) {
       throw new Error('expected "state"')
     }
@@ -69,8 +69,8 @@ export default class Applicants implements IOnfidoComponent {
 
     const forms = await Promise.all(stubsAndForms.map(item => this.apiUtils.getResource(item)))
     const props = getApplicantProps(forms)
-    const { name, dob, addresses } = props
-    if (!(name && dob && addresses && addresses.length)) {
+    const { first_name, last_name, dob, addresses=[] } = props
+    if (!(first_name && last_name && dob && addresses.length)) {
       return false
     }
 
@@ -79,7 +79,7 @@ export default class Applicants implements IOnfidoComponent {
     const applicant = parseStub(application.applicant).permalink
     // to ensure uniqueness during testing
     if (this.padApplicantName) {
-      props.name.last_name += applicant.slice(0, 4)
+      props.last_name += applicant.slice(0, 4)
     }
 
     if (state.onfidoApplicant) {
@@ -118,7 +118,7 @@ export default class Applicants implements IOnfidoComponent {
   //   return this.onfidoAPI.applicants.update()
   // }
 
-  public update = async ({ req, application, state, form }: IncomingFormReq):Promise<boolean> => {
+  public update = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
     if (!form) {
       throw new Error(`expected "form"`)
     }
@@ -132,7 +132,7 @@ export default class Applicants implements IOnfidoComponent {
     return false
   }
 
-  public uploadSelfie = async ({ req, application, state, form }: IncomingFormReq):Promise<boolean> => {
+  public uploadSelfie = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
     ensureNoPendingCheck(state)
     if (!form) {
       throw new Error(`expected "form" to be ${SELFIE}`)
@@ -169,7 +169,7 @@ export default class Applicants implements IOnfidoComponent {
     }
   }
 
-  public uploadPhotoID = async ({ req, application, state, form }: IncomingFormReq) => {
+  public uploadPhotoID = async ({ req, application, state, form }: OnfidoState) => {
     ensureNoPendingCheck(state)
     if (!form) {
       throw new Error(`expected "form" to be ${PHOTO_ID}`)

@@ -1,5 +1,10 @@
 import APIUtils from './api-utils'
 
+// declare module "*.json" {
+//     const value: any;
+//     export default value;
+// }
+
 export type Address = {
   building_number: number|string
   flat_number?: string
@@ -10,11 +15,17 @@ export type Address = {
   country: string
 }
 
+// export type OnfidoName = {
+//   first_name: string
+//   last_name: string
+// }
+
 export type ApplicantProps = {
-  first_name: string
-  last_name: string
+  first_name?: string
+  last_name?: string
   email?: string
   gender?: string
+  dob?:string
   addresses?: Address[]
 }
 
@@ -71,6 +82,14 @@ export type OnfidoAddress = {
   postcode: string
   sub_street?: string
   flat_number?: string
+}
+
+export type OnfidoState = {
+  application: any
+  state: any
+  // incoming form
+  req?: any
+  form?: any
 }
 
 export type IncomingFormReq = {

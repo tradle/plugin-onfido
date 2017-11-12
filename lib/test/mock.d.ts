@@ -1,6 +1,6 @@
 import { Onfido } from '../';
 declare const _default: {
-    client: (opts: any) => Onfido;
+    client: (opts?: {}) => Onfido;
     api: () => {
         applicants: {
             get: (id: any) => Promise<never>;
@@ -26,7 +26,7 @@ declare const _default: {
         get: (key: any) => Promise<any>;
         put: (key: any, value: any) => Promise<void>;
     };
-    sig: () => any;
+    sig: () => string;
     request: () => {
         get: (prop: any) => string;
         originalUrl: string;

@@ -135,7 +135,13 @@ export default class Checks implements IOnfidoComponent {
     }
   }
 
-  public processCheck = async ({ req, application, state, current, update }) => {
+  public processCheck = async ({ req, application, state, current, update }: {
+    req?:any,
+    application,
+    state,
+    current,
+    update
+  }) => {
     if (!(application && state && current)) {
       throw new Error('expected "application", "state", and "current"')
     }

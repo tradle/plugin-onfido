@@ -21,7 +21,8 @@ import {
   APPLICANT,
   DEFAULT_WEBHOOK_KEY,
   ONFIDO_WEBHOOK_EVENTS,
-  DEFAULT_WEBHOOK_EVENTS
+  DEFAULT_WEBHOOK_EVENTS,
+  APPLICATION
 } from './constants'
 
 import Errors from './errors'
@@ -91,7 +92,7 @@ export class Onfido implements IOnfidoComponent {
   }
 
   public ['onmessage:tradle.Form'] = async (req):Promise<any|void> => {
-    const { payload, type, application } = req
+    const { payload, application } = req
     if (!application) return
 
     const { applicant, requestFor } = application
@@ -109,7 +110,7 @@ export class Onfido implements IOnfidoComponent {
         permalink
       })
     } catch (err) {
-      if (!err.notFound) throw err
+      if (err.name !== 'NotFound') throw err
 
       fresh = true
       state = buildResource({
@@ -123,6 +124,7 @@ export class Onfido implements IOnfidoComponent {
         .toJSON()
     }
 
+    const type = payload[TYPE]
     let copy = clone(state)
     const { check } = state
     // nothing can be done until a check completes
@@ -299,7 +301,8 @@ export class Onfido implements IOnfidoComponent {
   }
 
   private handleForm = async ({ req, application, state, form }: IncomingFormReq) => {
-    const { type } = req
+    const { payload } = req
+    const type = payload[TYPE]
     const { result, pendingCheck, onfidoApplicant, selfie, photoID } = state
     if (!onfidoApplicant) {
       try {
@@ -328,6 +331,7 @@ export class Onfido implements IOnfidoComponent {
   }
 
   private updateApplicantAndCreateCheck = async ({ req, application, state, form }: IncomingFormReq) => {
+    const type = req.payload[TYPE]
     try {
       await this.applicants.update({ req, application, state, form })
     } catch (error) {
