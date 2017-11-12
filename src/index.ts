@@ -1,7 +1,7 @@
 import deepEqual = require('deep-equal')
 import clone = require('clone')
 import buildResource = require('@tradle/build-resource')
-import { TYPE } from '@tradle/constants'
+import { TYPE, SIG } from '@tradle/constants'
 import mergeModels = require('@tradle/merge-models')
 import onfidoModels from './onfido-models'
 import Applicants from './applicants'
@@ -10,7 +10,8 @@ import {
   ILogger,
   IOnfidoComponent,
   PluginOpts,
-  IncomingFormReq
+  IncomingFormReq,
+  OnfidoState
 } from './types'
 
 import APIUtils from './api-utils'
@@ -38,7 +39,6 @@ import {
   parseStub,
   getLatestFormByType,
   isApplicantInfoForm,
-  ensureNoPendingCheck,
   addLinks
 } from './utils'
 
@@ -47,6 +47,8 @@ import {
 //   [SELFIE]: true
 // }
 
+const DEFAULT_REPORTS = onfidoModels.reportType.enum.map(({ id }) => id)
+
 export class Onfido implements IOnfidoComponent {
   public applicants:Applicants
   public checks:Checks
@@ -54,6 +56,7 @@ export class Onfido implements IOnfidoComponent {
   public products:string[]
   public padApplicantName:boolean
   public formsToRequestCorrectionsFor:string[]
+  public preCheckAddress:boolean
   public webhookKey:string
   public logger:ILogger
   public onfidoAPI: any
@@ -68,6 +71,7 @@ export class Onfido implements IOnfidoComponent {
       productsAPI,
       padApplicantName,
       formsToRequestCorrectionsFor,
+      preCheckAddress,
       webhookKey=DEFAULT_WEBHOOK_KEY
       // onFinished
     } = opts
@@ -84,6 +88,7 @@ export class Onfido implements IOnfidoComponent {
 
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
+    this.preCheckAddress = preCheckAddress
     this.webhookKey = webhookKey
     // this.onFinished = onFinished
     this.apiUtils = new APIUtils(this)
@@ -104,10 +109,10 @@ export class Onfido implements IOnfidoComponent {
     let state
     let fresh
     try {
-      const { permalink } = await this.bot.kv.get(getStateKey(application))
+      const mapping = await this.getStatePointer({ application })
       state = await this.apiUtils.getResource({
         type: onfidoModels.state.id,
-        permalink
+        permalink: mapping.state
       })
     } catch (err) {
       if (err.name !== 'NotFound') throw err
@@ -122,6 +127,11 @@ export class Onfido implements IOnfidoComponent {
           applicant
         })
         .toJSON()
+
+      // yes, we might have to re-sign later
+      // but if we don't, we won't be able to point to the state object
+      await this.bot.sign(state)
+      addLinks(state)
     }
 
     const type = payload[TYPE]
@@ -135,15 +145,21 @@ export class Onfido implements IOnfidoComponent {
 
     await this.handleForm({ req, application, state, form: payload })
     if (fresh) {
-      await this.bot.sign(state)
-      addLinks(state)
       await Promise.all([
-        this.bot.kv.put(getStateKey(application), state._permalink),
+        this.putStatePointer({ application, state }),
         this.bot.save(state)
       ])
     } else if (!deepEqual(state, copy)) {
       await this.bot.versionAndSave(state)
     }
+  }
+
+  private putStatePointer = async ({ application, state }) => {
+    await this.bot.kv.put(getStateKey(application), { state: state._permalink })
+  }
+
+  private getStatePointer = async ({ application }) => {
+    return await this.bot.kv.get(getStateKey(application))
   }
 
   public handleOnfidoError = async ({ req, error }) => {
@@ -215,13 +231,16 @@ export class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ req, application, state, reports }) => {
-    return await this.checks.create({
-      req,
-      application,
-      state,
-      reports: reports || onfidoModels.reportType.enum.map(({ id }) => id)
-    })
+  public createCheck = async ({ req, application, state, reports=DEFAULT_REPORTS }) => {
+    if (!state[SIG]) {
+      await this.bot.sign(state)
+    }
+
+    try {
+      return await this.checks.create({ req, application, state, reports })
+    } finally {
+      await this.bot.save(state)
+    }
   }
 
   public registerWebhook = async ({ url, events=DEFAULT_WEBHOOK_EVENTS }: {
@@ -300,65 +319,109 @@ export class Onfido implements IOnfidoComponent {
     })
   }
 
-  private handleForm = async ({ req, application, state, form }: IncomingFormReq) => {
-    const { payload } = req
-    const type = payload[TYPE]
-    const { result, pendingCheck, onfidoApplicant, selfie, photoID } = state
-    if (!onfidoApplicant) {
-      try {
-        await this.applicants.createOrUpdate({ req, application, state, form })
-      } catch (error) {
-        await this.handleOnfidoError({ req, error })
-      }
-
-      return
-    }
-
-    if (!pendingCheck) {
-      await this.updateApplicantAndCreateCheck({ req, application, state, form })
-      return
-    }
-
-    if (!result) {
-      this.logger.info(`received ${type} but already have a check pending. Ignoring for now.`)
-      return
-    }
-
-    if (result) {
-      this.logger.info(`received ${type} but already have a check complete. Ignoring for now.`)
+  private handleForm = async (opts: IncomingFormReq) => {
+    try {
+      await this._handleForm(opts)
+    } catch (error) {
+      await this.handleOnfidoError({ req: opts.req, error })
       return
     }
   }
 
-  private updateApplicantAndCreateCheck = async ({ req, application, state, form }: IncomingFormReq) => {
-    const type = req.payload[TYPE]
-    try {
-      await this.applicants.update({ req, application, state, form })
-    } catch (error) {
-      await this.handleOnfidoError({ req, error })
+  private _handleForm = async ({ req, application, state, form }: IncomingFormReq) => {
+    const type = form[TYPE]
+    const { pendingCheck, onfidoApplicant, selfie, photoID } = state
+
+    if (pendingCheck) {
+      const { result } = state
+      if (result) {
+        this.logger.info(`received ${type} but already have a check complete. Ignoring for now.`)
+      } else {
+        this.logger.info(`received ${type} but already have a check pending. Ignoring for now.`)
+      }
+
       return
     }
 
+    if (onfidoApplicant) {
+      const ok = await this.updateApplicant({ req, application, state, form })
+      if (!ok) return
+    } else {
+      const ok = await this.applicants.createOrUpdate({ req, application, state, form })
+      if (!ok) return
+    }
+
+    await this.uploadAttachments({ req, application, state, form })
+    if (state.photoID && state.selfie) {
+      await this.createCheck({ req, application, state })
+    }
+  }
+
+  // private execWithErrorHandler = async (fn, opts):Promise<boolean> => {
+  //   const { req } = opts
+  //   try {
+  //     await fn(opts)
+  //     return true
+  //   } catch (error) {
+  //     await this.handleOnfidoError({ req, error })
+  //     return false
+  //   }
+  // }
+
+  public updateApplicant = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
+    try {
+      await this.applicants.update({ req, application, state, form })
+      return true
+    } catch (error) {
+      await this.handleOnfidoError({ req, error })
+      return false
+    }
+  }
+
+  public uploadAttachments = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
     if (!state.selfie) {
-      const selfie = type === SELFIE ? form : getSelfie(application)
+      const selfie = await this.getForm({ type: SELFIE, application, form })
       if (selfie) {
         const ok = await this.applicants.uploadSelfie({ req, application, state, form: selfie })
-        if (!ok) return
+        if (!ok) return false
       }
     }
 
     if (!state.photoID) {
-      const photoID = type === PHOTO_ID ? form : getPhotoID(application)
+      const photoID = await this.getForm({ type: PHOTO_ID, application, form })
       if (photoID) {
         const ok = await this.applicants.uploadPhotoID({ req, application, state, form: photoID })
-        if (!ok) return
+        if (!ok) return false
       }
     }
 
-    try {
-      await this.createCheck({ req, application, state })
-    } finally {
-      await this.bot.save(state)
+    return true
+  }
+
+  public getState = async (permalink:string) => {
+    return await this.apiUtils.getResource({
+      type: onfidoModels.state.id,
+      permalink
+    })
+  }
+
+  public listStates = async (opts) => {
+    return await this.bot.db.find({
+      ...opts,
+      filter: {
+        EQ: {
+          [TYPE]: onfidoModels.state.id
+        }
+      }
+    })
+  }
+
+  private getForm = async ({ type, application, form }) => {
+    if (type === form[TYPE]) return form
+
+    const parsedStub = getLatestFormByType(application, type)
+    if (parsedStub) {
+      return await this.apiUtils.getResource(parsedStub)
     }
   }
 }

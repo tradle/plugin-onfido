@@ -36,15 +36,18 @@ export default class Applicants implements IOnfidoComponent {
   public logger: ILogger
   public apiUtils: APIUtils
   public padApplicantName: boolean
+  public preCheckAddress: boolean
   public models: any
   private main: Onfido
   constructor (main:Onfido) {
+    this.main = main
     this.models = main.models
     this.bot = main.productsAPI.bot
     this.onfidoAPI = main.onfidoAPI
     this.logger = main.logger
     this.apiUtils = main.apiUtils
     this.padApplicantName = main.padApplicantName
+    this.preCheckAddress = main.preCheckAddress
   }
 
   public createOrUpdate = async ({ req, application, state, form }: OnfidoState) => {
@@ -52,14 +55,17 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error('expected "state"')
     }
 
-    const stubsAndForms = getFormsToCreateApplicant(application)
+    const fStub = form && this.apiUtils.stub(form)
+    const stubsAndForms = getFormsToCreateApplicant({
+      forms: application.forms.concat(fStub || [])
+    })
+
     if (!stubsAndForms) {
       this.logger.debug(`don't have the requisite forms to create an applicant`)
       return false
     }
 
     if (form) {
-      const fStub = this.apiUtils.stub(form)
       const idx = stubsAndForms.findIndex(stub => stub.id === fStub.id)
       if (idx !== -1) {
         // no need to look this one up, we already have the body
@@ -74,7 +80,9 @@ export default class Applicants implements IOnfidoComponent {
       return false
     }
 
-    await this.apiUtils.checkAddress({ address: addresses[0] })
+    if (this.preCheckAddress) {
+      await this.apiUtils.checkAddress({ address: addresses[0] })
+    }
 
     const applicant = parseStub(application.applicant).permalink
     // to ensure uniqueness during testing
@@ -138,7 +146,8 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error(`expected "form" to be ${SELFIE}`)
     }
 
-    const { selfie } = await this.apiUtils.getResource(form)
+    debugger
+    const { selfie } = form
     const { mimeType, data } = parseDataUri(selfie.url)
     this.logger.debug('uploading selfie')
     try {
@@ -175,7 +184,7 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error(`expected "form" to be ${PHOTO_ID}`)
     }
 
-    const { scan, documentType } = await this.apiUtils.getResource(form)
+    const { scan, documentType } = form
     const { mimeType, data } = parseDataUri(scan.url)
     const onfidoDocType = documentType.id === 'passport' ? 'passport' : 'driving_licence'
     const document = {
@@ -198,23 +207,5 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     return false
-  }
-
-  public get = async (permalink:string) => {
-    return await this.apiUtils.getResource({
-      type: onfidoModels.state.id,
-      permalink
-    })
-  }
-
-  public list = async (opts) => {
-    return await this.bot.db.find({
-      ...opts,
-      filter: {
-        EQ: {
-          [TYPE]: onfidoModels.state.id
-        }
-      }
-    })
   }
 }

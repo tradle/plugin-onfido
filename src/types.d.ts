@@ -65,6 +65,7 @@ export type PluginOpts = {
   // onFinished: Function
   padApplicantName?: boolean
   webhookKey?: string
+  preCheckAddress?: boolean
 }
 
 export interface IOnfidoComponent {

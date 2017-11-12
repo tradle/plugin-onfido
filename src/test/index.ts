@@ -139,16 +139,18 @@ test('common case', loudAsync(async (t) => {
 
   const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create').callsFake(props => {
     t.same(props, {
-      first_name: 'Moog',
-      last_name: 'Soni',
-      addresses: [{
-        country: 'GBR',
-        building_number: '96',
-        street: 'Thornfield Rd',
-        town: 'Middlesbrough',
-        postcode: 'TS5 5BY'
-      }],
-      dob: '1981-04-03'
+      "first_name": "MOOG",
+      "last_name": "SONI",
+      "dob": "1981-04-03",
+      "addresses": [
+        {
+          "country": "GBR",
+          "building_number": "96",
+          "street": "Thornfield Rd",
+          "town": "Middlesbrough",
+          "postcode": "TS5 5BY"
+        }
+      ]
     })
 
     return Promise.resolve(fixtures.applicants[0])
@@ -211,6 +213,7 @@ test('common case', loudAsync(async (t) => {
   }), true)
 
   t.ok(state.onfidoApplicant)
+
   application.forms = [
     formStubs.applicant,
     formStubs.selfie,
@@ -220,7 +223,7 @@ test('common case', loudAsync(async (t) => {
   t.equal(await onfido.applicants.uploadSelfie({
     state,
     application,
-    form: formStubs.selfie
+    form: forms.selfie
   }), true)
 
   t.ok(state.selfie)
@@ -284,6 +287,104 @@ test('common case', loudAsync(async (t) => {
 
   // await onfido.createCheck({ state })
   // t.same(state.result, { id: 'onfido.OpResult_consider', title: 'Failure' })
+
+  t.end()
+}))
+
+test('plugin methods', loudAsync(async (t) => {
+  const {
+    onfido,
+    // state,
+    application,
+    check,
+    pendingCheck
+  } = setup()
+
+  const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create')
+    .callsFake(async (props) => {
+      t.same(props, {
+        first_name: 'MOOG',
+        last_name: 'SONI',
+        dob: '1981-04-03',
+        addresses: [ {
+          country: 'GBR',
+          building_number: '96',
+          street: 'Thornfield Rd',
+          town: 'Middlesbrough',
+          postcode: 'TS5 5BY'
+        } ]
+      })
+
+      return fixtures.applicants[0]
+    })
+
+  const updateApplicantSpy = sinon.spy(onfido.onfidoAPI.applicants, 'update')
+  const uploadLivePhotoStub = sinon.stub(onfido.onfidoAPI.applicants, 'uploadLivePhoto')
+    .callsFake(async (id, photo) => {
+      t.equal(id, '0cc317bc-00a5-4e4b-8085-4485fceab85a')
+      t.same(photo, {
+        file: new Buffer('fdcdfab635b7145a806c8382a60f303e58498b0f7f74a7784c504fe58274fee2', 'hex'),
+        filename: 'live-photo-51f77e2.jpg'
+      })
+
+      return
+    })
+
+  const uploadDocumentStub = sinon.stub(onfido.onfidoAPI.applicants, 'uploadDocument')
+    .callsFake(async (id, doc) => {
+      t.equal(id, '0cc317bc-00a5-4e4b-8085-4485fceab85a')
+      t.same(doc, {
+        type: 'driving_licence',
+        file: new Buffer('fdcdfab635b7145a806c8382a60f303e58498b0f7f74a7784c504fe58274fee2', 'hex'),
+        filename: 'driving_licence-51f77e2.jpg'
+      })
+
+      return
+    })
+
+  const createCheckStub = sinon.stub(onfido.onfidoAPI.checks, 'create')
+    .callsFake(async (id, doc) => {
+      t.equal(id, '0cc317bc-00a5-4e4b-8085-4485fceab85a')
+      return pendingCheck
+    })
+
+  await Promise.all(Object.keys(forms).map(name => {
+    return onfido.bot.save(forms[name])
+  }))
+
+  const receive = async (payload) => {
+    await onfido['onmessage:tradle.Form']({ payload, application })
+    application.forms.push(toStub(payload))
+    await onfido.bot.save(application)
+  }
+
+  await receive(forms.name)
+  t.equal(createApplicantStub.callCount, 0)
+  t.equal(uploadLivePhotoStub.callCount, 0)
+  t.equal(uploadDocumentStub.callCount, 0)
+  t.equal(updateApplicantSpy.callCount, 0)
+  t.equal(createCheckStub.callCount, 0)
+
+  await receive(forms.driving_license)
+  t.equal(createApplicantStub.callCount, 0)
+  t.equal(uploadLivePhotoStub.callCount, 0)
+  t.equal(uploadDocumentStub.callCount, 0)
+  t.equal(updateApplicantSpy.callCount, 0)
+  t.equal(createCheckStub.callCount, 0)
+
+  await receive(forms.applicant)
+  t.equal(createApplicantStub.callCount, 1)
+  t.equal(uploadLivePhotoStub.callCount, 0)
+  t.equal(uploadDocumentStub.callCount, 1)
+  t.equal(updateApplicantSpy.callCount, 0)
+  t.equal(createCheckStub.callCount, 0)
+
+  await receive(forms.selfie)
+  t.equal(createApplicantStub.callCount, 1)
+  t.equal(uploadLivePhotoStub.callCount, 1)
+  t.equal(uploadDocumentStub.callCount, 1)
+  t.equal(updateApplicantSpy.callCount, 0)
+  t.equal(createCheckStub.callCount, 1)
 
   t.end()
 }))

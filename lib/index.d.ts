@@ -1,6 +1,6 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { ILogger, IOnfidoComponent, PluginOpts } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState } from './types';
 import APIUtils from './api-utils';
 export declare class Onfido implements IOnfidoComponent {
     applicants: Applicants;
@@ -9,6 +9,7 @@ export declare class Onfido implements IOnfidoComponent {
     products: string[];
     padApplicantName: boolean;
     formsToRequestCorrectionsFor: string[];
+    preCheckAddress: boolean;
     webhookKey: string;
     logger: ILogger;
     onfidoAPI: any;
@@ -17,6 +18,8 @@ export declare class Onfido implements IOnfidoComponent {
     models: any;
     constructor(opts: PluginOpts);
     ['onmessage:tradle.Form']: (req: any) => Promise<any>;
+    private putStatePointer;
+    private getStatePointer;
     handleOnfidoError: ({req, error}: {
         req: any;
         error: any;
@@ -25,7 +28,7 @@ export declare class Onfido implements IOnfidoComponent {
         req: any;
         application: any;
         state: any;
-        reports: any;
+        reports?: string[];
     }) => Promise<any>;
     registerWebhook: ({url, events}: {
         url: string;
@@ -37,7 +40,12 @@ export declare class Onfido implements IOnfidoComponent {
         desiredResult: any;
     }) => Promise<any>;
     private handleForm;
-    private updateApplicantAndCreateCheck;
+    private _handleForm;
+    updateApplicant: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
+    uploadAttachments: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
+    getState: (permalink: string) => Promise<any>;
+    listStates: (opts: any) => Promise<any>;
+    private getForm;
 }
 declare const _default: (opts: any) => Onfido;
 export default _default;

@@ -8,6 +8,7 @@ export default class Applicants implements IOnfidoComponent {
     logger: ILogger;
     apiUtils: APIUtils;
     padApplicantName: boolean;
+    preCheckAddress: boolean;
     models: any;
     private main;
     constructor(main: Onfido);
@@ -15,6 +16,4 @@ export default class Applicants implements IOnfidoComponent {
     update: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
     uploadSelfie: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
     uploadPhotoID: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
-    get: (permalink: string) => Promise<any>;
-    list: (opts: any) => Promise<any>;
 }
