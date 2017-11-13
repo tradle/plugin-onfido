@@ -168,11 +168,8 @@ const state = {
       ref: checkStatus.id
     },
     errors: {
-      type: 'array',
-      items: {
-        type: 'object',
-        range: 'json'
-      }
+      type: 'object',
+      range: 'json'
     },
     result: {
       type: 'object',

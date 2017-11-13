@@ -133,10 +133,7 @@ declare const models: {
             };
             errors: {
                 type: string;
-                items: {
-                    type: string;
-                    range: string;
-                };
+                range: string;
             };
             result: {
                 type: string;

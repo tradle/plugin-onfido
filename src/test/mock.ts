@@ -69,8 +69,10 @@ function mockBot () {
   }
 
   const sign = async (resource) => {
-    resource[SIG] = newSig()
-    return resource
+    return {
+      ...resource,
+      [SIG]: newSig()
+    }
   }
 
   const save = async (resource) => {
@@ -78,10 +80,10 @@ function mockBot () {
   }
 
   const signAndSave = async (resource) => {
-    await sign(resource)
-    addLinks(resource)
-    await save(resource)
-    return resource
+    const signed = await sign(resource)
+    addLinks(signed)
+    await save(signed)
+    return signed
   }
 
   const version = async (resource) => {

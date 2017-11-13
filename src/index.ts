@@ -130,7 +130,7 @@ export class Onfido implements IOnfidoComponent {
 
       // yes, we might have to re-sign later
       // but if we don't, we won't be able to point to the state object
-      await this.bot.sign(state)
+      state = await this.bot.sign(state)
       addLinks(state)
     }
 
@@ -233,7 +233,7 @@ export class Onfido implements IOnfidoComponent {
 
   public createCheck = async ({ req, application, state, reports=DEFAULT_REPORTS }) => {
     if (!state[SIG]) {
-      await this.bot.sign(state)
+      state = await this.bot.sign(state)
     }
 
     try {

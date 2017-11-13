@@ -28,7 +28,7 @@ export default class Checks implements IOnfidoComponent {
         state: any;
         current: any;
         update: any;
-    }) => Promise<void>;
+    }) => Promise<any>;
     processCompletedReport: ({req, application, state, report}: {
         req: any;
         application: any;

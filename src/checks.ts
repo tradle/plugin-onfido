@@ -96,10 +96,16 @@ export default class Checks implements IOnfidoComponent {
       })
       .toJSON()
 
+    const updated = await this.processCheck({
+      req,
+      application,
+      state,
+      current,
+      update: check
+    })
 
-    await this.processCheck({ req, application, state, current, update: check })
     await this.saveCheckMapping({
-      check: current,
+      check: updated,
       state
     })
 
@@ -178,18 +184,20 @@ export default class Checks implements IOnfidoComponent {
       }
     }
 
+    let updated
     if (current[SIG]) {
-      current = await this.bot.versionAndSave(current)
+      updated = await this.bot.versionAndSave(current)
     } else {
-      await this.bot.signAndSave(current)
+      updated = await this.bot.signAndSave(current)
     }
 
     this.apiUtils.setProps(state, {
-      check: current,
-      checkStatus: current.status
+      check: updated,
+      checkStatus: updated.status
     })
 
-    // emitCompletedReports({ applicant, current, update })
+    // emitCompletedReports({ applicant, current: updated, update })
+    return updated
   }
 
   public processCompletedReport = async ({ req, application, state, report }) => {
