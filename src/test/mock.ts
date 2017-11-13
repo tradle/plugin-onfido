@@ -5,10 +5,9 @@ import pick = require('object.pick')
 import { TYPE, SIG } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import fakeResource = require('@tradle/build-resource/fake')
-import createPlugin from '../'
 import models from '../models'
 import ConsoleLogger from './console-logger'
-import { Onfido } from '../'
+import { Onfido, createPlugin } from '../'
 import { addLinks } from '../utils'
 import { DEFAULT_WEBHOOK_KEY } from '../constants'
 
