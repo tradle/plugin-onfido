@@ -2,7 +2,7 @@
   "name": "@tradle/plugin-onfido",
   "version": "1.0.0",
   "description": "onfido plugin for Tradle's MyCloud",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "node lib/test",
     "precommit": "npm run copy-static-assets && npm test",
