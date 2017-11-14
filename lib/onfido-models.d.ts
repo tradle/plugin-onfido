@@ -78,13 +78,6 @@ declare const models: {
                     ref: string;
                 };
             };
-            reportsResults: {
-                type: string;
-                inlined: boolean;
-                items: {
-                    ref: string;
-                };
-            };
             status: {
                 type: string;
                 ref: string;
@@ -92,6 +85,9 @@ declare const models: {
             result: {
                 type: string;
                 ref: string;
+            };
+            applicantId: {
+                type: string;
             };
             checkId: {
                 type: string;
@@ -122,6 +118,12 @@ declare const models: {
             photoID: {
                 type: string;
                 ref: string;
+            };
+            applicantDetails: {
+                type: string;
+                items: {
+                    ref: string;
+                };
             };
             check: {
                 type: string;

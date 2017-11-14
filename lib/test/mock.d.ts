@@ -25,6 +25,7 @@ declare const _default: {
     keyValueStore: () => {
         get: (key: any) => Promise<any>;
         put: (key: any, value: any) => Promise<void>;
+        sub: () => any;
     };
     sig: () => string;
     request: () => {

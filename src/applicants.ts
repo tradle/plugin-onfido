@@ -14,7 +14,9 @@ import {
   hasTwoSides,
   getExtension,
   digest,
-  ensureNoPendingCheck
+  ensureNoPendingCheck,
+  sanitize,
+  stubFromParsedStub
 } from './utils'
 
 import APIUtils from './api-utils'
@@ -33,6 +35,7 @@ import {
 export default class Applicants implements IOnfidoComponent {
   public bot: any
   public onfidoAPI: any
+  public productsAPI: any
   public logger: ILogger
   public apiUtils: APIUtils
   public padApplicantName: boolean
@@ -44,6 +47,7 @@ export default class Applicants implements IOnfidoComponent {
     this.models = main.models
     this.bot = main.productsAPI.bot
     this.onfidoAPI = main.onfidoAPI
+    this.productsAPI = main.productsAPI
     this.logger = main.logger
     this.apiUtils = main.apiUtils
     this.padApplicantName = main.padApplicantName
@@ -56,24 +60,25 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     const fStub = form && this.apiUtils.stub(form)
-    const stubsAndForms = getFormsToCreateApplicant({
+    const parsedStubs = getFormsToCreateApplicant({
       forms: application.forms.concat(fStub || [])
     })
 
-    if (!stubsAndForms) {
+    if (!parsedStubs) {
       this.logger.debug(`don't have the requisite forms to create an applicant`)
       return false
     }
 
+    const parsedStubsAndForms = parsedStubs.slice()
     if (form) {
-      const idx = stubsAndForms.findIndex(stub => stub.id === fStub.id)
+      const idx = parsedStubs.findIndex(stub => stub.id === fStub.id)
       if (idx !== -1) {
         // no need to look this one up, we already have the body
-        stubsAndForms[idx] = form
+        parsedStubsAndForms[idx] = form
       }
     }
 
-    const forms = await Promise.all(stubsAndForms.map(item => this.apiUtils.getResource(item)))
+    const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item)))
     const props = getApplicantProps(forms)
     const { first_name, last_name, dob, addresses=[] } = props
     if (!(first_name && last_name && dob && addresses.length)) {
@@ -91,26 +96,15 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     if (state.onfidoApplicant) {
-      const isDiff = Object.keys(props).some(key => {
-        return !deepEqual(props[key], state.onfidoApplicant[key])
-      })
-
-      if (!isDiff) {
-        this.logger.debug('skipping update, no changes to push')
-        return false
-      }
-
-      try {
-        await this.onfidoAPI.applicants.update(props)
-        return true
-      } catch (err) {
-        this.logger.error(`failed to update applicant ${applicant}`, err)
-        throw err
-      }
+      return await this.update({ req, application, state, props })
     }
 
     try {
-      state.onfidoApplicant = await this.onfidoAPI.applicants.create(props)
+      const onfidoApplicant = await this.onfidoAPI.applicants.create(props)
+      state.onfidoApplicant = sanitize(onfidoApplicant).sanitized
+      this.apiUtils.setProps(state, {
+        applicantDetails: parsedStubs.map(stubFromParsedStub)
+      })
       return true
     } catch (err) {
       this.logger.error(`failed to create applicant ${applicant}`, err)
@@ -126,14 +120,26 @@ export default class Applicants implements IOnfidoComponent {
   //   return this.onfidoAPI.applicants.update()
   // }
 
-  public update = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
-    if (!form) {
-      throw new Error(`expected "form"`)
+  public update = async ({ req, application, state, form, props }: {
+    application: any
+    state: any
+    req?: any
+    form?: any
+    props?: any
+  }):Promise<boolean> => {
+    if (!props) {
+      if (!form) {
+        throw new Error('expected "form" or "props')
+      }
+
+      props = getApplicantProps([form])
     }
 
-    const props = getApplicantProps([form])
-    if (props && Object.keys(props).length) {
-      await this.onfidoAPI.applicants.update(props)
+    if (props) {
+      if (hasUpdate({ current: state.onfidoApplicant, update: props })) {
+        await this.onfidoAPI.applicants.update(props)
+      }
+
       return true
     }
 
@@ -146,7 +152,6 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error(`expected "form" to be ${SELFIE}`)
     }
 
-    debugger
     const { selfie } = form
     const { mimeType, data } = parseDataUri(selfie.url)
     this.logger.debug('uploading selfie')
@@ -208,4 +213,10 @@ export default class Applicants implements IOnfidoComponent {
 
     return false
   }
+}
+
+const hasUpdate = ({ current, update }) => {
+  return Object.keys(update).some(key => {
+    return !deepEqual(update[key], current[key])
+  })
 }

@@ -18,6 +18,9 @@ import Extractor from './extractor'
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const APPLICANT_PROPERTY_SETS = ['name', 'address', 'dob']
 const createFilterForType = query => ({ type }) => type === query
+const { sanitize } = validateResource.utils
+
+export { sanitize }
 
 export const getLatestFormByType = (application:any, type:string) => {
   return getLatestForm(application, createFilterForType(type))
@@ -226,7 +229,7 @@ export const getCompletedReports = ({ current, update }) => {
   return update.reports.filter(report => {
     if (!isComplete(report)) return
 
-    const match = current.reportsResults.find(r => r.id === report.id)
+    const match = current.reports.find(r => r.id === report.id)
     if (match) return !isComplete(match)
   })
 }
@@ -259,6 +262,7 @@ export const createOnfidoVerification = ({ applicant, form, report }) => {
     })
     .set({
       document: form,
+      method
       // documentOwner: applicant
     })
     .toJSON()
@@ -273,4 +277,24 @@ export const addLinks = (resource) => {
     _link: buildResource.link(resource),
     _permalink: buildResource.permalink(resource)
   })
+}
+
+export const batchify = (arr, batchSize) => {
+  const batches = []
+  while (arr.length) {
+    batches.push(arr.slice(0, batchSize))
+    arr = arr.slice(batchSize)
+  }
+
+  return batches
+}
+
+export const stubFromParsedStub = (parsedStub) => {
+  const id = buildResource.id(parsedStub)
+  const stub = { id }
+  if (parsedStub.title) {
+    stub.title = parsedStub.title
+  }
+
+  return stub
 }

@@ -14,6 +14,7 @@ export default class APIUtils {
     this.logger = logger
     this.onfidoAPI = onfidoAPI
     this.productsAPI = productsAPI
+    this.bot = productsAPI.bot
     this.db = productsAPI.bot.db
     this.models = models
   }
@@ -22,10 +23,13 @@ export default class APIUtils {
     if (resource[TYPE]) return resource
 
     const { type, permalink } = resource.id ? parseStub(resource) : resource
-    return this.db.get({
+    const result = await this.db.get({
       [TYPE]: type,
       _permalink: permalink
     })
+
+    await this.bot.resolveEmbeds(result)
+    return result
   }
 
   public checkAddress = async ({ address }) => {

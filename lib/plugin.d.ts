@@ -15,6 +15,7 @@ export default class Onfido implements IOnfidoComponent {
     onfidoAPI: any;
     productsAPI: any;
     apiUtils: APIUtils;
+    conf: any;
     models: any;
     constructor(opts: PluginOpts);
     ['onmessage:tradle.Form']: (req: any) => Promise<any>;

@@ -1,4 +1,5 @@
 import { ApplicantProps } from './types';
+export { sanitize };
 export declare const getLatestFormByType: (application: any, type: string) => any;
 export declare const getLatestForm: (application: any, filter: Function) => any;
 export declare const parseStub: any;
@@ -41,3 +42,7 @@ export declare const createOnfidoVerification: ({applicant, form, report}: {
 }) => any;
 export declare const isComplete: (onfidoObject: any) => boolean;
 export declare const addLinks: (resource: any) => void;
+export declare const batchify: (arr: any, batchSize: any) => any[];
+export declare const stubFromParsedStub: (parsedStub: any) => {
+    id: any;
+};

@@ -49,4 +49,10 @@ export default class Checks implements IOnfidoComponent {
         applicantId: string;
         checkId: string;
     }) => any;
+    list: () => any;
+    listWithStatus: (status: string | string[]) => Promise<any>;
+    listPending: () => Promise<any>;
+    listCompleted: () => Promise<any>;
+    listWithdrawn: () => Promise<any>;
+    sync: () => Promise<void>;
 }

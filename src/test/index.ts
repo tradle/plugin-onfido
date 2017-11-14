@@ -156,18 +156,19 @@ test('common case', loudAsync(async (t) => {
     return Promise.resolve(fixtures.applicants[0])
   })
 
+  let vIdx = 0
   const importVerificationStub = sinon.stub(onfido.productsAPI, 'importVerification')
-    .callsFake(({ verification }) => {
-      t.same(omit(verification, SIG), {
-        _t: 'tradle.Verification',
-        document: {
-          id: 'tradle.PhotoID_795f813aaae1db88ff5fffde70010bdf3b4c7bd4ac0a29e9ea23e9694797be87_795f813aaae1db88ff5fffde70010bdf3b4c7bd4ac0a29e9ea23e9694797be87',
-          // id: 'tradle.PhotoID_3a89d94cb5db964fc1ffb9275a4ca4c35522407bf559a7aa08ff72db857ca798_3a89d94cb5db964fc1ffb9275a4ca4c35522407bf559a7aa08ff72db857ca798',
-          title: 'Driver licence United Kingdom'
-        }
-      })
+    .callsFake(async ({ verification }) => {
+      verification = omit(verification, SIG)
+      if (vIdx === 0) {
+        t.same(verification.document, formStubs.driving_license)
+      } else if (vIdx === 1) {
+        t.same(verification.document, formStubs.selfie)
+      } else if (vIdx === 2) {
+        t.same(verification.document, formStubs.applicant)
+      }
 
-      return Promise.resolve()
+      vIdx++
     })
 
   await Promise.all([
@@ -284,6 +285,8 @@ test('common case', loudAsync(async (t) => {
   }
 
   await onfido.processWebhookEvent({ req: mock.request() })
+
+  t.equal(vIdx, 3)
 
   // await onfido.createCheck({ state })
   // t.same(state.result, { id: 'onfido.OpResult_consider', title: 'Failure' })

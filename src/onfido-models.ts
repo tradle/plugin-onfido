@@ -91,13 +91,13 @@ const check = {
       }
     },
     // // to avoid looking up reports
-    reportsResults: {
-      type: 'array',
-      inlined: true,
-      items: {
-        ref: reportStatus.id
-      }
-    },
+    // reportsResults: {
+    //   type: 'array',
+    //   inlined: true,
+    //   items: {
+    //     ref: reportStatus.id
+    //   }
+    // },
     status: {
       type: 'object',
       ref: checkStatus.id
@@ -105,6 +105,9 @@ const check = {
     result: {
       type: 'object',
       ref: opResult.id
+    },
+    applicantId: {
+      type: 'string'
     },
     checkId: {
       type: 'string'
@@ -158,6 +161,12 @@ const state = {
     photoID: {
       type: 'object',
       ref: 'tradle.PhotoID'
+    },
+    applicantDetails: {
+      type: 'array',
+      items: {
+        ref: 'tradle.Form'
+      }
     },
     check: {
       type: 'object',

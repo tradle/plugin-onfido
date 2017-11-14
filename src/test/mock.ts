@@ -21,7 +21,8 @@ const keyValueStore = () => {
     },
     put: async (key, value) => {
       store[key] = value
-    }
+    },
+    sub: () => keyValueStore()
   }
 }
 
@@ -36,7 +37,7 @@ export default {
 function mockClient (opts={}) {
   const onfidoAPI = mockAPI()
   const bot = mockBot()
-  return createPlugin({
+  const plugin = createPlugin({
     logger: new ConsoleLogger(),
     onfidoAPI,
     productsAPI: {
@@ -53,6 +54,9 @@ function mockClient (opts={}) {
     },
     ...opts
   })
+
+  plugin.conf.put(DEFAULT_WEBHOOK_KEY, { token: 'testtoken' })
+  return plugin
 }
 
 function mockBot () {
@@ -97,17 +101,14 @@ function mockBot () {
   }
 
   return {
+    resolveEmbeds: () => {},
     sign,
     save,
     signAndSave,
     version,
     versionAndSave,
     kv: keyValueStore(),
-    conf: (function () {
-      const store = keyValueStore()
-      store.put(DEFAULT_WEBHOOK_KEY, { token: 'testtoken' })
-      return store
-    })(),
+    conf: keyValueStore(),
     db: {
       get: async (props) => {
         const val = db[getKey(props)]

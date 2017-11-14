@@ -14,7 +14,9 @@ import {
   isComplete,
   createOnfidoVerification,
   parseReportURL,
-  addLinks
+  addLinks,
+  sanitize,
+  batchify
 } from './utils'
 
 import { toOnfido, fromOnfido } from './enum-value-map'
@@ -23,6 +25,7 @@ import {
   APPLICATION
 } from './constants'
 
+const CHECK_SYNC_BATCH_SIZE = 10
 const { reportType } = onfidoModels
 const REPORT_TYPE_TO_ONFIDO_NAME = {
   document: {
@@ -91,8 +94,9 @@ export default class Checks implements IOnfidoComponent {
       .set({
         status: 'inprogress',
         reportsOrdered: reports.map(id => ({ id })),
-        reportsResults: [],
-        rawData: check
+        rawData: sanitize(check).sanitized,
+        checkId: check.id,
+        applicantId: state.onfidoApplicant.id
       })
       .toJSON()
 
@@ -170,8 +174,11 @@ export default class Checks implements IOnfidoComponent {
       this.logger.debug(`check for ${applicant.id} status: ${status}`)
     }
 
-    // const reports = getCompletedReports({ current, update })
-    const reports = update.reports
+    const reports = getCompletedReports({
+      current: current[SIG] ? current.rawData : null,
+      update
+    })
+
     if (reports.length) {
       let willAutoSave = !!req
       const appCopy = clone(application)
@@ -201,35 +208,42 @@ export default class Checks implements IOnfidoComponent {
   }
 
   public processCompletedReport = async ({ req, application, state, report }) => {
-    const { applicant, selfie, photoID } = state
+    const { applicant, applicantDetails, selfie, photoID } = state
     const type = report.name
 
     this.logger.debug(`report ${type} complete for applicant ${applicant.id}`)
 
-    let stub
+    let stubs = []
     if (type === 'document') {
-      stub = photoID
+      stubs.push(photoID)
     } else if (type === 'facial_similarity') {
-      stub = selfie
+      stubs.push(selfie)
     } else if (type === 'identity') {
-      stub = applicant
+      stubs.push(...applicantDetails)
     } else {
       this.logger.error('unknown report type: ' + type, report)
       return
     }
 
     if (report.result === 'clear') {
-      const verification = createOnfidoVerification({
-        applicant,
-        report,
-        form: await this.apiUtils.getResource(stub)
-      })
+      await Promise.all(stubs.map(async (stub) => {
+        const verification = createOnfidoVerification({
+          applicant,
+          report,
+          form: await this.apiUtils.getResource(stub)
+        })
 
-      await this.productsAPI.importVerification({
-        req,
-        application,
-        verification: await this.bot.sign(verification)
-      })
+        const signed = await this.bot.sign(verification)
+        addLinks(signed)
+        await Promise.all([
+          this.bot.save(signed),
+          this.productsAPI.importVerification({
+            req,
+            application,
+            verification: signed
+          })
+        ])
+      }))
     }
   }
 
@@ -329,6 +343,51 @@ export default class Checks implements IOnfidoComponent {
       checkId,
       expandReports: true
     })
+  }
+
+  public list = () => {
+    return this.bot.db.find({
+      filter: {
+        EQ: {
+          [TYPE]: onfidoModels.check.id
+        }
+      }
+    })
+  }
+
+  public listWithStatus = async (status:string|string[]) => {
+    return await this.bot.db.find({
+      filter: {
+        EQ: {
+          [TYPE]: onfidoModels.check.id
+        },
+        IN: {
+          status: [].concat(status).map(value => buildResource.enumValue({
+            model: onfidoModels.checkStatus,
+            value
+          }))
+        }
+      }
+    })
+  }
+
+  public listPending = () => this.listWithStatus(['inprogress', 'paused', 'reopened'])
+  public listCompleted = () => this.listWithStatus(['complete'])
+  public listWithdrawn = () => this.listWithStatus(['withdrawn'])
+
+  public sync = async () => {
+    const pending = await this.listPending()
+    const batches = batchify(pending, CHECK_SYNC_BATCH_SIZE)
+    for (const batch of batches) {
+      await Promise.all(pending.map(async (current) => {
+        const update = await this.fetch(current)
+        const status = fromOnfido[update.status] || update.status
+        if (status === current.status) return
+
+        const { application, state, check } = await this.lookupByCheckId(current.checkId)
+        await this.processCheck({ application, state, current, update })
+      }))
+    }
   }
 }
 

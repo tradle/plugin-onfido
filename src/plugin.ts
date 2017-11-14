@@ -1,4 +1,5 @@
 import deepEqual = require('deep-equal')
+import pick = require('object.pick')
 import clone = require('clone')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
@@ -62,6 +63,7 @@ export default class Onfido implements IOnfidoComponent {
   public onfidoAPI: any
   public productsAPI:any
   public apiUtils: APIUtils
+  public conf: any
   public models: any
   constructor (opts: PluginOpts) {
     const {
@@ -81,6 +83,7 @@ export default class Onfido implements IOnfidoComponent {
     this.products = products
     this.productsAPI = productsAPI
     this.bot = productsAPI.bot
+    this.conf = this.bot.conf.sub('onfido')
     this.models = mergeModels()
       .add(productsAPI.models.all)
       .add(onfidoModels.all)
@@ -172,7 +175,8 @@ export default class Onfido implements IOnfidoComponent {
     const { body={}, status=-1 } = error
     const { type, fields } = body
     if (!(status === 422 || type === 'validation_error')) {
-      this.logger.error('unrecognized onfido error', JSON.stringify(error, null, 2))
+      this.logger.error('unrecognized onfido error', pick(error, ['message', 'stack', 'name']))
+
       // call this application "submitted"
       // this.onFinished()
       return true
@@ -247,6 +251,7 @@ export default class Onfido implements IOnfidoComponent {
     url:string,
     events?:string[]
   }) => {
+    debugger
     events.forEach(event => {
       if (!ONFIDO_WEBHOOK_EVENTS.includes(event)) {
         throw new Error(`invalid webhook event: ${event}`)
@@ -254,14 +259,15 @@ export default class Onfido implements IOnfidoComponent {
     })
 
     const webhook = await this.onfidoAPI.webhooks.register({ url, events })
-    await this.bot.conf.put(this.webhookKey, webhook)
+    await this.conf.put(this.webhookKey, webhook)
     return webhook
   }
 
   public processWebhookEvent = async ({ req, res, desiredResult }) => {
+    debugger
     let webhook
     try {
-      webhook = await this.bot.conf.get(this.webhookKey)
+      webhook = await this.conf.get(this.webhookKey)
     } catch (err) {
       throw new Error('webhook not found')
     }
