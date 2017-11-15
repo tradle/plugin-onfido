@@ -4,13 +4,13 @@ import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
 import onfidoModels from './onfido-models'
 import models from './models'
-import { ApplicantProps } from './types'
-
+import { ApplicantProps, ProductOptions } from './types'
 import {
   IPROOV_SELFIE,
   SELFIE,
   PHOTO_ID,
-  VERIFICATION
+  VERIFICATION,
+  REPORTS
 } from './constants'
 
 import Extractor from './extractor'
@@ -297,4 +297,16 @@ export const stubFromParsedStub = (parsedStub) => {
   }
 
   return stub
+}
+
+export const validateProductOptions = (opts:ProductOptions):void => {
+  const { reports } = opts
+  if (!(reports && Array.isArray(reports) && reports.length)) {
+    throw new Error('expected "reports" array in product options')
+  }
+
+  const bad = reports.find(report => !REPORTS.includes(report))
+  if (bad) {
+    throw new Error(`report "${bad}" is invalid. Supported reports are: ${REPORTS.join(', ')}`)
+  }
 }

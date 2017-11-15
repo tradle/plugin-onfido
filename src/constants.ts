@@ -1,3 +1,5 @@
+import onfidoModels from './onfido-models'
+
 const IPROOV_SELFIE = 'tradle.IProovSelfie'
 const SELFIE = 'tradle.Selfie'
 const PHOTO_ID = 'tradle.PhotoID'
@@ -23,6 +25,9 @@ const DEFAULT_WEBHOOK_EVENTS = [
   'check.completed'
 ]
 
+const REPORTS = onfidoModels.reportType.enum.map(({ id }) => id)
+const DEFAULT_REPORTS = REPORTS.slice()
+
 export {
   IPROOV_SELFIE,
   SELFIE,
@@ -35,5 +40,7 @@ export {
   APPLICATION,
   DEFAULT_WEBHOOK_KEY,
   ONFIDO_WEBHOOK_EVENTS,
-  DEFAULT_WEBHOOK_EVENTS
+  DEFAULT_WEBHOOK_EVENTS,
+  REPORTS,
+  DEFAULT_REPORTS
 }

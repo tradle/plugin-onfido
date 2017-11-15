@@ -1,12 +1,12 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions } from './types';
 import APIUtils from './api-utils';
 export default class Onfido implements IOnfidoComponent {
     applicants: Applicants;
     checks: Checks;
     bot: any;
-    products: string[];
+    products: ProductOptions[];
     padApplicantName: boolean;
     formsToRequestCorrectionsFor: string[];
     preCheckAddress: boolean;
@@ -19,6 +19,8 @@ export default class Onfido implements IOnfidoComponent {
     models: any;
     constructor(opts: PluginOpts);
     ['onmessage:tradle.Form']: (req: any) => Promise<any>;
+    private ensureProductSupported;
+    private getProductOptions;
     private putStatePointer;
     private getStatePointer;
     handleOnfidoError: ({req, error}: {
@@ -29,7 +31,7 @@ export default class Onfido implements IOnfidoComponent {
         req: any;
         application: any;
         state: any;
-        reports?: string[];
+        reports: any;
     }) => Promise<any>;
     registerWebhook: ({url, events}: {
         url: string;

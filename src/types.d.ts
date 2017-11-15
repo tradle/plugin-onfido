@@ -56,11 +56,16 @@ export interface ILogger {
   error: Function
 }
 
+export type ProductOptions = {
+  product: string,
+  reports?: string[]
+}
+
 export type PluginOpts = {
   logger: ILogger
   onfidoAPI: any
   productsAPI: any
-  products: string[]
+  products: ProductOptions[]
   formsToRequestCorrectionsFor: string[]
   // onFinished: Function
   padApplicantName?: boolean

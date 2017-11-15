@@ -15,7 +15,7 @@ import fixtures from './fixtures'
 import models from '../models'
 import { getEnumValueId, getLatestFormByType, addLinks, parseCheckURL } from '../utils'
 import onfidoModels from '../onfido-models'
-import { APPLICATION } from '../constants'
+import { APPLICATION, REPORTS } from '../constants'
 
 const forms = fixtures.tradle
 const formsByType = {}
@@ -45,7 +45,10 @@ const TEST_PRODUCT = {
 
 const setup = () => {
   const onfido = mock.client({
-    products: [TEST_PRODUCT.id]
+    products: [{
+      product: TEST_PRODUCT.id,
+      reports: REPORTS.slice()
+    }]
   })
 
   let i = 0

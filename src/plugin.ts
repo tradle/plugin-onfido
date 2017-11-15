@@ -12,7 +12,8 @@ import {
   IOnfidoComponent,
   PluginOpts,
   IncomingFormReq,
-  OnfidoState
+  OnfidoState,
+  ProductOptions
 } from './types'
 
 import APIUtils from './api-utils'
@@ -24,7 +25,9 @@ import {
   DEFAULT_WEBHOOK_KEY,
   ONFIDO_WEBHOOK_EVENTS,
   DEFAULT_WEBHOOK_EVENTS,
-  APPLICATION
+  APPLICATION,
+  REPORTS,
+  DEFAULT_REPORTS
 } from './constants'
 
 import Errors from './errors'
@@ -40,7 +43,8 @@ import {
   parseStub,
   getLatestFormByType,
   isApplicantInfoForm,
-  addLinks
+  addLinks,
+  validateProductOptions
 } from './utils'
 
 // const REQUEST_EDITS_FOR = {
@@ -48,13 +52,11 @@ import {
 //   [SELFIE]: true
 // }
 
-const DEFAULT_REPORTS = onfidoModels.reportType.enum.map(({ id }) => id)
-
 export default class Onfido implements IOnfidoComponent {
   public applicants:Applicants
   public checks:Checks
   public bot:any
-  public products:string[]
+  public products:ProductOptions[]
   public padApplicantName:boolean
   public formsToRequestCorrectionsFor:string[]
   public preCheckAddress:boolean
@@ -80,7 +82,15 @@ export default class Onfido implements IOnfidoComponent {
 
     this.logger = logger
     this.onfidoAPI = onfidoAPI
-    this.products = products
+
+    products.forEach(validateProductOptions)
+    this.products = products.map(opts => {
+      return {
+        ...opts,
+        reports: opts.reports || DEFAULT_REPORTS
+      }
+    })
+
     this.productsAPI = productsAPI
     this.bot = productsAPI.bot
     this.conf = this.bot.conf.sub('onfido')
@@ -104,7 +114,7 @@ export default class Onfido implements IOnfidoComponent {
     if (!application) return
 
     const { applicant, requestFor } = application
-    if (!this.products.includes(requestFor)) {
+    if (!this.getProductOptions(requestFor)) {
       this.logger.debug(`ignoring product ${requestFor}`)
       return
     }
@@ -155,6 +165,19 @@ export default class Onfido implements IOnfidoComponent {
     } else if (!deepEqual(state, copy)) {
       await this.bot.versionAndSave(state)
     }
+  }
+
+  private ensureProductSupported = ({ application }: {
+    application:any
+  }):void => {
+    const { requestFor } = application
+    if (!this.getProductOptions(requestFor)) {
+      throw new Error(`missing options for product "${requestFor}"`)
+    }
+  }
+
+  private getProductOptions = (productModelId:string):ProductOptions => {
+    return this.products.find(({ product }) => product === productModelId)
   }
 
   private putStatePointer = async ({ application, state }) => {
@@ -235,9 +258,15 @@ export default class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ req, application, state, reports=DEFAULT_REPORTS }) => {
+  public createCheck = async ({ req, application, state, reports }) => {
+    this.ensureProductSupported({ application })
+
     if (!state[SIG]) {
       state = await this.bot.sign(state)
+    }
+
+    if (!reports) {
+      ({ reports } = this.getProductOptions(application.requestFor))
     }
 
     try {
