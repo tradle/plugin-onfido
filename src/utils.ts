@@ -240,11 +240,7 @@ export const createOnfidoVerification = ({ applicant, form, report }) => {
     [TYPE]: 'tradle.APIBasedVerificationMethod',
     api: {
       [TYPE]: 'tradle.API',
-      name: 'onfido',
-      provider: {
-        id: 'tradle.Organization_57f54fd7a5dd777a541ca994f3155aaecd656bc05ac52e6163a2311d2d4b8b87_57f54fd7a5dd777a541ca994f3155aaecd656bc05ac52e6163a2311d2d4b8b87',
-        title: 'Onfido'
-      }
+      name: 'onfido'
     },
     reference: [{ queryId: 'report:' + report.id }],
     aspect,
