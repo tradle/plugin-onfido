@@ -1,5 +1,6 @@
 import deepEqual = require('deep-equal')
 import pick = require('object.pick')
+import omit = require('object.omit')
 import clone = require('clone')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
@@ -230,16 +231,20 @@ export default class Onfido implements IOnfidoComponent {
     }
 
     const application = req.application || req.product
-    const form = getLatestFormByType(application, formType)
+    const form = this.productsAPI.state.getLatestFormByType(application, formType)
     if (!form) {
       this.logger.error(`failed to find form for property: ${onfidoProp}`)
       throw error
     }
 
     const message = propInfo.error || Errors.INVALID_VALUE
-    const prefill = formType === SELFIE
-      ? { [TYPE]: formType }
-      : form
+    let prefill
+    if (formType === SELFIE) {
+      prefill = { [TYPE]: formType }
+    } else {
+      prefill = await this.apiUtils.getResource(form)
+      prefill = omit(prefill, [SIG])
+    }
 
     this.logger.debug(`requesting edit of ${formType}`)
     await this.productsAPI.requestEdit({

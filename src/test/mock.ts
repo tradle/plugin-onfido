@@ -50,6 +50,11 @@ function mockClient (opts={}) {
       bot,
       saveNewVersionOfApplication: async ({ application }) => {
         return await bot.versionAndSave(application)
+      },
+      state: {
+        getLatestFormByType: (forms, type) => {
+          return forms.slice().reverse().find(({ id }) => parseStub(id).type === type)
+        }
       }
     },
     ...opts
