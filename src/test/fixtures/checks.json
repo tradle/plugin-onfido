@@ -1,104 +1,309 @@
 {
-  "0cc317bc-00a5-4e4b-8085-4485fceab85a": [
-    {
-      "id": "694c2e98-fd07-4eb7-91f7-34bfc94e73c2",
-      "created_at": "2016-12-21T18:01:04Z",
-      "status": "complete",
-      "redirect_uri": null,
-      "type": "express",
-      "result": "clear",
-      "sandbox": true,
-      "report_type_groups": [
-        "4143"
-      ],
-      "tags": [],
-      "results_uri": "https://onfido.com/dashboard/information_requests/2088606",
-      "download_uri": "https://onfido.com/dashboard/pdf/information_requests/2088606",
-      "form_uri": null,
-      "href": "/v2/applicants/0cc317bc-00a5-4e4b-8085-4485fceab85a/checks/694c2e98-fd07-4eb7-91f7-34bfc94e73c2",
-      "reports": [
-        {
-          "created_at": "2016-12-21T18:01:04Z",
-          "href": "/v2/checks/694c2e98-fd07-4eb7-91f7-34bfc94e73c2/reports/bf79334b-b7d9-481c-9cac-fadb4fe87071",
-          "id": "bf79334b-b7d9-481c-9cac-fadb4fe87071",
-          "name": "document",
-          "properties": [
-            null
+  "pending": {
+    "id": "6d34fdd5-1cec-45c9-82cd-be0b1643c5d0",
+    "created_at": "2016-12-21T18:01:04Z",
+    "status": "in_progress",
+    "redirect_uri": null,
+    "type": "express",
+    "result": null,
+    "sandbox": true,
+    "report_type_groups": [
+      "4143"
+    ],
+    "tags": [],
+    "results_uri": "https://onfido.com/dashboard/information_requests/2088606",
+    "download_uri": "https://onfido.com/dashboard/pdf/information_requests/2088606",
+    "form_uri": null,
+    "href": "/v2/applicants/0cc317bc-00a5-4e4b-8085-4485fceab85a/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0",
+    "reports": [
+      {
+        "created_at": "2016-12-21T18:01:04Z",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/f82eee17-0d64-46cf-bc00-f72216e2978d",
+        "id": "f82eee17-0d64-46cf-bc00-f72216e2978d",
+        "name": "document",
+        "properties": [
+          null
+        ],
+        "result": null,
+        "status": "in_progress",
+        "variant": "standard",
+        "breakdown": [
+          null
+        ]
+      },
+      {
+        "created_at": "2016-12-21T18:01:04Z",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/576a5b94-f4b5-4707-851f-93fe942a900c",
+        "id": "576a5b94-f4b5-4707-851f-93fe942a900c",
+        "name": "facial_similarity",
+        "properties": [
+          null
+        ],
+        "result": null,
+        "status": "in_progress",
+        "variant": "standard",
+        "breakdown": [
+          null
+        ]
+      },
+      {
+        "created_at": "2016-12-21T18:01:04Z",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/25bb76a8-34d2-42e4-9802-85ab7d4ce722",
+        "id": "25bb76a8-34d2-42e4-9802-85ab7d4ce722",
+        "name": "identity",
+        "properties": [
+          null
+        ],
+        "result": null,
+        "status": "in_progress",
+        "variant": "standard",
+        "breakdown": [
+          null
+        ]
+      }
+    ],
+    "paused": false
+  },
+  "complete": {
+    "id": "6d34fdd5-1cec-45c9-82cd-be0b1643c5d0",
+    "created_at": "2017-11-16T01:31:06Z",
+    "status": "complete",
+    "redirect_uri": null,
+    "type": "express",
+    "result": "clear",
+    "sandbox": true,
+    "report_type_groups": [
+      "4143"
+    ],
+    "tags": [],
+    "results_uri": "https://onfido.com/dashboard/information_requests/6606697",
+    "download_uri": "https://onfido.com/dashboard/pdf/information_requests/6606697",
+    "form_uri": null,
+    "href": "/v2/applicants/0cc317bc-00a5-4e4b-8085-4485fceab85a/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0",
+    "reports": [
+      {
+        "created_at": "2017-11-16T01:31:06Z",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/f82eee17-0d64-46cf-bc00-f72216e2978d",
+        "id": "f82eee17-0d64-46cf-bc00-f72216e2978d",
+        "name": "document",
+        "properties": {
+          "nationality": "",
+          "last_name": "Soni7a2c",
+          "issuing_country": "GBR",
+          "gender": "",
+          "first_name": "Moog",
+          "document_type": "passport",
+          "document_numbers": [
+            {
+              "value": "9999999999",
+              "type": "passport"
+            }
           ],
-          "result": "clear",
-          "status": "complete",
-          "variant": "standard",
-          "breakdown": [
-            null
-          ]
-        }
-      ],
-      "paused": false
-    },
-    {
-      "id": "794c2e98-fd07-4eb7-91f7-34bfc94e73c2",
-      "created_at": "2016-12-21T18:01:04Z",
-      "status": "complete",
-      "redirect_uri": null,
-      "type": "express",
-      "result": "clear",
-      "sandbox": true,
-      "report_type_groups": [
-        "4143"
-      ],
-      "tags": [],
-      "results_uri": "https://onfido.com/dashboard/information_requests/2088606",
-      "download_uri": "https://onfido.com/dashboard/pdf/information_requests/2088606",
-      "form_uri": null,
-      "href": "/v2/applicants/0cc317bc-00a5-4e4b-8085-4485fceab85a/checks/794c2e98-fd07-4eb7-91f7-34bfc94e73c2",
-      "reports": [
-        {
-          "created_at": "2016-12-21T18:01:04Z",
-          "href": "/v2/checks/794c2e98-fd07-4eb7-91f7-34bfc94e73c2/reports/cf79334b-b7d9-481c-9cac-fadb4fe87071",
-          "id": "cf79334b-b7d9-481c-9cac-fadb4fe87071",
-          "name": "document",
-          "properties": [
-            null
-          ],
-          "result": "clear",
-          "status": "complete",
-          "variant": "standard",
-          "breakdown": [
-            null
-          ]
+          "date_of_expiry": "1900-01-01",
+          "date_of_birth": "1900-01-01"
         },
-        {
-          "created_at": "2016-12-21T18:01:04Z",
-          "href": "/v2/checks/794c2e98-fd07-4eb7-91f7-34bfc94e73c2/reports/df79334b-b7d9-481c-9cac-fadb4fe87071",
-          "id": "df79334b-b7d9-481c-9cac-fadb4fe87071",
-          "name": "facial_similarity",
-          "properties": [
-            null
-          ],
-          "result": "clear",
-          "status": "complete",
-          "variant": "standard",
-          "breakdown": [
-            null
-          ]
-        },
-        {
-          "created_at": "2016-12-21T18:01:04Z",
-          "href": "/v2/checks/794c2e98-fd07-4eb7-91f7-34bfc94e73c2/reports/25bb76a8-34d2-42e4-9802-85ab7d4ce722",
-          "id": "25bb76a8-34d2-42e4-9802-85ab7d4ce722",
-          "name": "identity",
-          "properties": [
-            null
-          ],
-          "result": "clear",
-          "status": "complete",
-          "variant": "standard",
-          "breakdown": [
-            null
-          ]
+        "result": "clear",
+        "status": "complete",
+        "sub_result": "clear",
+        "variant": "standard",
+        "breakdown": {
+          "data_comparison": {
+            "result": "clear",
+            "breakdown": {
+              "date_of_birth": {
+                "result": "clear",
+                "properties": {}
+              },
+              "date_of_expiry": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_numbers": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_type": {
+                "result": "clear",
+                "properties": {}
+              },
+              "first_name": {
+                "result": "clear",
+                "properties": {}
+              },
+              "gender": {
+                "result": "clear",
+                "properties": {}
+              },
+              "issuing_country": {
+                "result": "clear",
+                "properties": {}
+              },
+              "last_name": {
+                "result": "clear",
+                "properties": {}
+              }
+            }
+          },
+          "data_consistency": {
+            "result": "clear",
+            "breakdown": {
+              "date_of_birth": {
+                "result": "clear",
+                "properties": {}
+              },
+              "date_of_expiry": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_numbers": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_type": {
+                "result": "clear",
+                "properties": {}
+              },
+              "first_name": {
+                "result": "clear",
+                "properties": {}
+              },
+              "gender": {
+                "result": "clear",
+                "properties": {}
+              },
+              "issuing_country": {
+                "result": "clear",
+                "properties": {}
+              },
+              "last_name": {
+                "result": "clear",
+                "properties": {}
+              },
+              "nationality": {
+                "result": "clear",
+                "properties": {}
+              }
+            }
+          },
+          "data_validation": {
+            "result": "clear",
+            "breakdown": {
+              "date_of_birth": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_expiration": {
+                "result": "clear",
+                "properties": {}
+              },
+              "document_numbers": {
+                "result": "clear",
+                "properties": {}
+              },
+              "expiry_date": {
+                "result": "clear",
+                "properties": {}
+              },
+              "gender": {
+                "result": "clear",
+                "properties": {}
+              },
+              "mrz": {
+                "result": "clear",
+                "properties": {}
+              }
+            }
+          },
+          "visual_authenticity": {
+            "result": "clear",
+            "breakdown": {
+              "face_detection": {
+                "result": "clear",
+                "properties": {}
+              },
+              "other": {
+                "result": "clear",
+                "properties": {}
+              }
+            }
+          },
+          "image_integrity": {
+            "result": "clear",
+            "breakdown": {
+              "image_quality": {
+                "result": "clear",
+                "properties": {}
+              },
+              "supported_document": {
+                "result": "clear",
+                "properties": {}
+              }
+            }
+          },
+          "police_record": {
+            "result": "clear"
+          }
         }
-      ],
-      "paused": false
-    }
-  ]
+      },
+      {
+        "created_at": "2017-11-16T01:31:06Z",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/576a5b94-f4b5-4707-851f-93fe942a900c",
+        "id": "576a5b94-f4b5-4707-851f-93fe942a900c",
+        "name": "facial_similarity",
+        "properties": {
+          "score": 0.8
+        },
+        "result": "clear",
+        "status": "complete",
+        "sub_result": null,
+        "variant": "standard",
+        "breakdown": {}
+      },
+      {
+        "id": "25bb76a8-34d2-42e4-9802-85ab7d4ce722",
+        "name": "identity",
+        "created_at": "2014-05-23T13:50:33Z",
+        "status": "complete",
+        "result": "clear",
+        "href": "/v2/checks/6d34fdd5-1cec-45c9-82cd-be0b1643c5d0/reports/25bb76a8-34d2-42e4-9802-85ab7d4ce722",
+        "breakdown": {
+          "address": {
+            "result": "clear",
+            "breakdown": {
+              "credit_agencies": {
+                "result": "clear",
+                "properties": {
+                  "number_of_agencies": "5"
+                }
+              },
+              "voting_register": {
+                "result": "none",
+                "properties": {}
+              },
+              "telephone_database": {
+                "result": "clear",
+                "properties": {}
+              }
+             }
+          },
+          "date_of_birth": {
+            "result": "clear",
+            "breakdown": {
+              "credit_agencies": {
+                "result": "clear",
+                "properties": {}
+              },
+              "voting_register": {
+                "result": "none",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "properties": {}
+      }
+    ],
+    "paused": false,
+    "version": "2.0"
+  }
 }

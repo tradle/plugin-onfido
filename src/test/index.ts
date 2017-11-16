@@ -3,6 +3,7 @@ installSourceMaps()
 
 import test = require('tape')
 import sinon = require('sinon')
+import clone = require('clone')
 import omit = require('object.omit')
 import parseDataUri = require('parse-data-uri')
 import { TYPE, SIG } from '@tradle/constants'
@@ -65,8 +66,8 @@ const setup = () => {
 
   addLinks(application)
 
-  const check = fixtures.checks['0cc317bc-00a5-4e4b-8085-4485fceab85a'][1]
-  const pendingCheck = toPendingCheck(check)
+  const completedCheck = clone(fixtures.checks.complete)
+  const pendingCheck = clone(fixtures.checks.pending)
 
   const state = {
     [TYPE]: onfidoModels.state.id,
@@ -83,17 +84,17 @@ const setup = () => {
     onfido,
     application,
     state,
-    check,
+    completedCheck,
     pendingCheck,
   }
 }
 
 test('common case', loudAsync(async (t) => {
-  const {
+  let {
     onfido,
     state,
     application,
-    check,
+    completedCheck,
     pendingCheck
   } = setup()
 
@@ -247,10 +248,11 @@ test('common case', loudAsync(async (t) => {
 
   let reportIdx = 0
   sinon.stub(onfido.onfidoAPI.webhooks, 'handleEvent').callsFake(async (req, token) => {
-    const report = check.reports[reportIdx]
+    const report = pendingCheck.reports[reportIdx]
     if (report) {
       // set completed report
-      pendingCheck.reports[reportIdx] = report
+      pendingCheck.reports[reportIdx] = completedCheck.reports[reportIdx]
+      reportIdx++
       return {
         "resource_type": "report",
         "action": "report.completed",
@@ -258,32 +260,32 @@ test('common case', loudAsync(async (t) => {
           "id": report.id,
           "status": "completed",
           "completed_at": "2014-05-23 13:50:33 UTC",
-          "href": `https://api.onfido.com/v2/checks/${check.id}/reports/${report.id}`
+          "href": `https://api.onfido.com/v2/checks/${pendingCheck.id}/reports/${report.id}`
         }
       }
     }
 
-    reportIdx++
+    pendingCheck = completedCheck
     return {
       "resource_type": "check",
       "action": "check.completed",
       "object": {
-        "id": check.id,
+        "id": pendingCheck.id,
         "status": "completed",
         "completed_at": "2014-05-23 13:50:33 UTC",
-        "href": `https://api.onfido.com/v2/checks/${check.id}`
+        "href": `https://api.onfido.com/v2/checks/${pendingCheck.id}`
       }
     }
   })
 
   sinon.stub(onfido.onfidoAPI.checks, 'get').callsFake(async (props) => {
-    const { applicantId, checkId } = parseCheckURL(check)
+    const { applicantId, checkId } = parseCheckURL(pendingCheck)
     t.equal(props.applicantId, applicantId)
     t.equal(props.checkId, checkId)
-    return check
+    return pendingCheck
   })
 
-  for (let i = 0; i < check.reports.length; i++) {
+  for (let i = 0; i < pendingCheck.reports.length; i++) {
     await onfido.processWebhookEvent({ req: mock.request() })
   }
 
@@ -302,7 +304,7 @@ test('plugin methods', loudAsync(async (t) => {
     onfido,
     // state,
     application,
-    check,
+    completedCheck,
     pendingCheck
   } = setup()
 

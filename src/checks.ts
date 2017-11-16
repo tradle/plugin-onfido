@@ -83,10 +83,11 @@ export default class Checks implements IOnfidoComponent {
       }
     })
 
-    const check = await this.onfidoAPI.checks.create(state.onfidoApplicant.id, {
+    let check = await this.onfidoAPI.checks.create(state.onfidoApplicant.id, {
       reports: reports.map(name => REPORT_TYPE_TO_ONFIDO_NAME[name])
     })
 
+    check = sanitize(check).sanitized
     const current = buildResource({
         models: this.models,
         model: onfidoModels.check
@@ -94,7 +95,7 @@ export default class Checks implements IOnfidoComponent {
       .set({
         status: 'inprogress',
         reportsOrdered: reports.map(id => ({ id })),
-        rawData: sanitize(check).sanitized,
+        rawData: check,
         checkId: check.id,
         applicantId: state.onfidoApplicant.id
       })
@@ -191,6 +192,8 @@ export default class Checks implements IOnfidoComponent {
       }
     }
 
+    current.rawData = sanitize(current.rawData).sanitized
+
     let updated
     if (current[SIG]) {
       updated = await this.bot.versionAndSave(current)
@@ -225,6 +228,7 @@ export default class Checks implements IOnfidoComponent {
       return
     }
 
+    report = sanitize(report).sanitized
     if (report.result === 'clear') {
       await Promise.all(stubs.map(async (stub) => {
         const verification = createOnfidoVerification({

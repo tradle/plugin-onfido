@@ -285,7 +285,6 @@ export default class Onfido implements IOnfidoComponent {
     url:string,
     events?:string[]
   }) => {
-    debugger
     events.forEach(event => {
       if (!ONFIDO_WEBHOOK_EVENTS.includes(event)) {
         throw new Error(`invalid webhook event: ${event}`)
@@ -298,7 +297,6 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   public processWebhookEvent = async ({ req, res, desiredResult }) => {
-    debugger
     let webhook
     try {
       webhook = await this.conf.get(this.webhookKey)
@@ -329,7 +327,7 @@ export default class Onfido implements IOnfidoComponent {
       checkId = parseReportURL(object).checkId
     } else if (resource_type === 'check') {
       checkId = object.id
-      applicantId = parseCheckURL(object)
+      applicantId = parseCheckURL(object).applicantId
     } else {
       this.logger.warn('unknown resource_type: ' + resource_type)
       return res.status(404).end()

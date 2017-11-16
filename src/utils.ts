@@ -57,13 +57,13 @@ export const firstProp = obj => {
 
 export const parseReportURL = url => {
   url = url.href || url
-  const [match, checkId, reportId] = url.match(/\/checks\/([a-zA-Z0-9-_]+)\/reports\/([a-zA-Z0-9-_]+)/)
+  const [match, checkId, reportId] = url.match(/(?:\/checks\/([^/]+))?\/reports\/([^/]+)/)
   return { checkId, reportId }
 }
 
 export const parseCheckURL = url => {
   url = url.href || url
-  const [match, applicantId, checkId] = url.match(/\/applicants\/([a-zA-Z0-9-_]+)\/checks\/([a-zA-Z0-9-_]+)/)
+  const [match, applicantId, checkId] = url.match(/(?:\/applicants\/([^/]+))?\/checks\/([^/]+)/)
   return { applicantId, checkId }
 }
 
