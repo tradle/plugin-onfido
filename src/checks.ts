@@ -62,11 +62,12 @@ export default class Checks implements IOnfidoComponent {
     this.models = main.models
   }
 
-  public create = async ({ req, application, state, reports }: {
+  public create = async ({ req, application, state, reports, saveState }: {
     req,
     application: any
     state: any
     reports: string[]
+    saveState?: boolean
   }) => {
     ensureNoPendingCheck(state)
     if (!state.onfidoApplicant) {
@@ -106,7 +107,8 @@ export default class Checks implements IOnfidoComponent {
       application,
       state,
       current,
-      update: check
+      update: check,
+      saveState
     })
 
     await this.saveCheckMapping({
@@ -146,8 +148,9 @@ export default class Checks implements IOnfidoComponent {
     }
   }
 
-  public processCheck = async ({ req, application, state, current, update }: {
+  public processCheck = async ({ req, application, state, current, update, saveState }: {
     req?:any,
+    saveState?: boolean,
     application,
     state,
     current,
@@ -205,6 +208,10 @@ export default class Checks implements IOnfidoComponent {
       check: updated,
       checkStatus: updated.status
     })
+
+    if (saveState) {
+      await this.bot.versionAndSave(state)
+    }
 
     // emitCompletedReports({ applicant, current: updated, update })
     return updated
@@ -389,7 +396,7 @@ export default class Checks implements IOnfidoComponent {
         if (status === current.status) return
 
         const { application, state, check } = await this.lookupByCheckId(current.checkId)
-        await this.processCheck({ application, state, current, update })
+        await this.processCheck({ application, state, current, update, saveState: true })
       }))
     }
   }

@@ -31,15 +31,17 @@ export default class Onfido implements IOnfidoComponent {
         req: any;
         application: any;
         state: any;
-        reports: any;
+        reports?: string[];
     }) => Promise<any>;
     registerWebhook: ({url, events}: {
         url: string;
         events?: string[];
     }) => Promise<any>;
-    processWebhookEvent: ({req, res, desiredResult}: {
+    getWebhook: () => Promise<any>;
+    processWebhookEvent: ({req, res, body, desiredResult}: {
         req: any;
         res: any;
+        body: any;
         desiredResult: any;
     }) => Promise<any>;
     private handleForm;
@@ -48,5 +50,6 @@ export default class Onfido implements IOnfidoComponent {
     uploadAttachments: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
     getState: (permalink: string) => Promise<any>;
     listStates: (opts: any) => Promise<any>;
+    sync: () => Promise<void>;
     private getForm;
 }

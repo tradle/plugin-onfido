@@ -9,11 +9,12 @@ export default class Checks implements IOnfidoComponent {
     apiUtils: APIUtils;
     models: any;
     constructor(main: Onfido);
-    create: ({req, application, state, reports}: {
+    create: ({req, application, state, reports, saveState}: {
         req: any;
         application: any;
         state: any;
         reports: string[];
+        saveState?: boolean;
     }) => Promise<any>;
     processReport: ({req, application, state, check, report}: {
         req: any;
@@ -22,8 +23,9 @@ export default class Checks implements IOnfidoComponent {
         check: any;
         report: any;
     }) => Promise<void>;
-    processCheck: ({req, application, state, current, update}: {
+    processCheck: ({req, application, state, current, update, saveState}: {
         req?: any;
+        saveState?: boolean;
         application: any;
         state: any;
         current: any;

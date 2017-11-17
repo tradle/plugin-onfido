@@ -230,7 +230,7 @@ export default class Onfido implements IOnfidoComponent {
       return true
     }
 
-    const application = req.application || req.product
+    const { application } = req
     const form = this.productsAPI.state.getLatestFormByType(application, formType)
     if (!form) {
       this.logger.error(`failed to find form for property: ${onfidoProp}`)
@@ -263,7 +263,12 @@ export default class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ req, application, state, reports }) => {
+  public createCheck = async ({ req, application, state, reports }: {
+    req: any
+    application: any
+    state: any
+    reports?: string[]
+  }) => {
     this.ensureProductSupported({ application })
 
     if (!state[SIG]) {
@@ -296,17 +301,22 @@ export default class Onfido implements IOnfidoComponent {
     return webhook
   }
 
-  public processWebhookEvent = async ({ req, res, desiredResult }) => {
+  public getWebhook = async () => {
+    return await this.conf.get(this.webhookKey)
+  }
+
+  public processWebhookEvent = async ({ req, res, body, desiredResult }) => {
     let webhook
     try {
       webhook = await this.conf.get(this.webhookKey)
     } catch (err) {
-      throw new Error('webhook not found')
+      this.logger.error('webhook not registered, ignoring event', err)
+      return res.status(400).end()
     }
 
     let event
     try {
-      event = await this.onfidoAPI.webhooks.handleEvent(req, webhook.token)
+      event = await this.onfidoAPI.webhooks.handleEvent(req, webhook.token, body)
     } catch (err) {
       this.logger.error('failed to process webhook event', err)
       return res.status(500).end()
@@ -353,7 +363,8 @@ export default class Onfido implements IOnfidoComponent {
       application,
       state,
       current: check,
-      update
+      update,
+      saveState: true
     })
   }
 
@@ -452,6 +463,10 @@ export default class Onfido implements IOnfidoComponent {
         }
       }
     })
+  }
+
+  public sync = async () => {
+    await this.checks.sync()
   }
 
   private getForm = async ({ type, application, form }) => {
