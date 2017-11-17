@@ -27,11 +27,12 @@ export default class Onfido implements IOnfidoComponent {
         req: any;
         error: any;
     }) => Promise<boolean>;
-    createCheck: ({req, application, state, reports}: {
-        req: any;
+    createCheck: ({req, application, state, saveState, reports}: {
+        req?: any;
+        reports?: string[];
         application: any;
         state: any;
-        reports?: string[];
+        saveState: boolean;
     }) => Promise<any>;
     registerWebhook: ({url, events}: {
         url: string;

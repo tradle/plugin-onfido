@@ -3,6 +3,7 @@ import { Onfido } from './';
 export default class APIUtils {
     productsAPI: any;
     onfidoAPI: any;
+    bot: any;
     logger: ILogger;
     models: any;
     private db;

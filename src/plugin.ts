@@ -263,11 +263,12 @@ export default class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ req, application, state, reports }: {
-    req: any
+  public createCheck = async ({ req, application, state, saveState, reports }: {
+    req?: any
+    reports?: string[]
     application: any
     state: any
-    reports?: string[]
+    saveState: boolean
   }) => {
     this.ensureProductSupported({ application })
 
@@ -280,7 +281,7 @@ export default class Onfido implements IOnfidoComponent {
     }
 
     try {
-      return await this.checks.create({ req, application, state, reports })
+      return await this.checks.create({ req, application, state, reports, saveState })
     } finally {
       await this.bot.save(state)
     }
@@ -402,7 +403,7 @@ export default class Onfido implements IOnfidoComponent {
 
     await this.uploadAttachments({ req, application, state, form })
     if (state.photoID && state.selfie) {
-      await this.createCheck({ req, application, state })
+      await this.createCheck({ req, application, state, saveState: false })
     }
   }
 

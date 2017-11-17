@@ -7,6 +7,7 @@ import { Onfido } from './'
 export default class APIUtils {
   public productsAPI: any
   public onfidoAPI: any
+  public bot: any
   public logger: ILogger
   public models: any
   private db: any

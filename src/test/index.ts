@@ -18,7 +18,15 @@ import { getEnumValueId, getLatestFormByType, addLinks, parseCheckURL } from '..
 import onfidoModels from '../onfido-models'
 import { APPLICATION, REPORTS } from '../constants'
 
-const forms = fixtures.tradle
+type Forms = {
+  name?: any
+  driving_license?: any
+  passport?: any
+  selfie?: any
+  applicant?: any
+}
+
+const forms:Forms = fixtures.tradle
 const formsByType = {}
 for (let name in forms) {
   let form = forms[name]
@@ -26,7 +34,7 @@ for (let name in forms) {
   formsByType[forms[name][TYPE]] = form
 }
 
-const formStubs = {}
+const formStubs:Forms = {}
 for (let name in forms) {
   formStubs[name] = toStub(forms[name])
 }
@@ -241,7 +249,7 @@ test('common case', loudAsync(async (t) => {
 
   t.ok(state.photoID)
 
-  await onfido.createCheck({ application, state })
+  await onfido.createCheck({ application, state, saveState: true })
   t.equal(state.result, undefined)
   t.ok(state.check)
   t.same(state.checkStatus, { id: 'onfido.CheckStatus_inprogress', title: 'In progress' })

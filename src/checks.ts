@@ -63,11 +63,11 @@ export default class Checks implements IOnfidoComponent {
   }
 
   public create = async ({ req, application, state, reports, saveState }: {
-    req,
+    req?:any,
     application: any
     state: any
     reports: string[]
-    saveState?: boolean
+    saveState: boolean
   }) => {
     ensureNoPendingCheck(state)
     if (!state.onfidoApplicant) {
@@ -150,7 +150,7 @@ export default class Checks implements IOnfidoComponent {
 
   public processCheck = async ({ req, application, state, current, update, saveState }: {
     req?:any,
-    saveState?: boolean,
+    saveState: boolean,
     application,
     state,
     current,
