@@ -4,8 +4,8 @@ import mergeModels = require('@tradle/merge-models')
 import onfidoModels from './onfido-models'
 
 const models = mergeModels()
-  .add(baseModels)
-  .add(customModels)
+  .add(baseModels, { validate: false })
+  .add(customModels, { validate: false })
   .add(onfidoModels.all)
   .get()
 
