@@ -34,6 +34,9 @@ export default class Onfido implements IOnfidoComponent {
         state: any;
         saveState: boolean;
     }) => Promise<any>;
+    unregisterWebhook: ({url}: {
+        url: any;
+    }) => Promise<void>;
     registerWebhook: ({url, events}: {
         url: string;
         events?: string[];
@@ -44,7 +47,7 @@ export default class Onfido implements IOnfidoComponent {
         res: any;
         body: any;
         desiredResult: any;
-    }) => Promise<any>;
+    }) => Promise<void>;
     private handleForm;
     private _handleForm;
     updateApplicant: ({req, application, state, form}: OnfidoState) => Promise<boolean>;

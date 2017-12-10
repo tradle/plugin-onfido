@@ -45,13 +45,13 @@ export default class Checks implements IOnfidoComponent {
     saveCheckMapping: ({state, check}: {
         state: any;
         check: any;
-    }) => any;
+    }) => Promise<void>;
     getCheckMapping: (checkId: string) => Promise<CheckMapping>;
     fetch: ({applicantId, checkId}: {
         applicantId: string;
         checkId: string;
-    }) => any;
-    list: () => any;
+    }) => Promise<any>;
+    list: () => Promise<any>;
     listWithStatus: (status: string | string[]) => Promise<any>;
     listPending: () => Promise<any>;
     listCompleted: () => Promise<any>;

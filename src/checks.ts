@@ -332,32 +332,32 @@ export default class Checks implements IOnfidoComponent {
   //   })
   // }
 
-  public saveCheckMapping = ({ state, check }) => {
-    return this.bot.kv.put(getCheckKey(check.rawData.id), {
+  public saveCheckMapping = async ({ state, check }) => {
+    await this.bot.kv.put(getCheckKey(check.rawData.id), {
       application: parseStub(state.application).permalink,
       state: buildResource.permalink(state),
       check: buildResource.permalink(check)
     })
   }
 
-  public getCheckMapping = (checkId:string):Promise<CheckMapping> => {
-    return this.bot.kv.get(getCheckKey(checkId))
+  public getCheckMapping = async (checkId:string):Promise<CheckMapping> => {
+    return await this.bot.kv.get(getCheckKey(checkId))
   }
 
-  public fetch = ({ applicantId, checkId }: {
+  public fetch = async ({ applicantId, checkId }: {
     applicantId:string
     checkId:string
   }) => {
     this.logger.debug(`looking up check ${checkId} for applicant ${applicantId}`)
-    return this.onfidoAPI.checks.get({
+    return await this.onfidoAPI.checks.get({
       applicantId,
       checkId,
       expandReports: true
     })
   }
 
-  public list = () => {
-    return this.bot.db.find({
+  public list = async () => {
+    return await this.bot.db.find({
       filter: {
         EQ: {
           [TYPE]: onfidoModels.check.id

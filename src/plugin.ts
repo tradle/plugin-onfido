@@ -317,7 +317,7 @@ export default class Onfido implements IOnfidoComponent {
       webhook = await this.getWebhook()
     } catch (err) {
       this.logger.error('webhook not registered, ignoring event', err)
-      return res.status(400).end()
+      throw httpError(400, 'webhook not registered')
     }
 
     let event
@@ -325,7 +325,11 @@ export default class Onfido implements IOnfidoComponent {
       event = await this.onfidoAPI.webhooks.handleEvent(req, webhook.token, body)
     } catch (err) {
       this.logger.error('failed to process webhook event', err)
-      return res.status(500).end()
+      const status = /invalid hmac/i.test(err.message)
+        ? 400
+        : 500
+
+      throw httpError(status, err.message)
     }
 
     const { resource_type, action, object } = event
@@ -333,9 +337,7 @@ export default class Onfido implements IOnfidoComponent {
       object.result = desiredResult
     }
 
-    if (!/\.completed?$/.test(action)) {
-      return res.status(200).end()
-    }
+    if (!/\.completed?$/.test(action)) return
 
     let checkId
     let applicantId
@@ -345,8 +347,9 @@ export default class Onfido implements IOnfidoComponent {
       checkId = object.id
       applicantId = parseCheckURL(object).applicantId
     } else {
-      this.logger.warn('unknown resource_type: ' + resource_type)
-      return res.status(404).end()
+      const msg = 'unknown resource_type: ' + resource_type
+      this.logger.warn(msg)
+      throw httpError(400, msg)
     }
 
     const loadSavedData = this.checks.lookupByCheckId(checkId)
@@ -487,4 +490,10 @@ export default class Onfido implements IOnfidoComponent {
 
 const getStateKey = application => {
   return `${APPLICATION}_${application._permalink}_onfidoState`
+}
+
+const httpError = (status, message) => {
+  const err = new Error('message')
+  err.status = status
+  return err
 }
