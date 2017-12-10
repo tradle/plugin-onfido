@@ -287,6 +287,11 @@ export default class Onfido implements IOnfidoComponent {
     }
   }
 
+  public unregisterWebhook = async ({ url }) => {
+    await this.onfidoAPI.webhooks.unregister(url)
+    await this.conf.del(this.webhookKey)
+  }
+
   public registerWebhook = async ({ url, events=DEFAULT_WEBHOOK_EVENTS }: {
     url:string,
     events?:string[]
@@ -309,7 +314,7 @@ export default class Onfido implements IOnfidoComponent {
   public processWebhookEvent = async ({ req, res, body, desiredResult }) => {
     let webhook
     try {
-      webhook = await this.conf.get(this.webhookKey)
+      webhook = await this.getWebhook()
     } catch (err) {
       this.logger.error('webhook not registered, ignoring event', err)
       return res.status(400).end()
