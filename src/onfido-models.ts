@@ -1,6 +1,6 @@
 const opResult = {
   type: 'tradle.Model',
-  id: 'onfido.OpResult',
+  id: 'tradle.onfido.OpResult',
   subClassOf: 'tradle.Enum',
   title: 'Onfido Operation Status',
   description: 'status of an Onfido operation: a report or a check',
@@ -18,7 +18,7 @@ const opResult = {
 
 const checkStatus = {
   type: 'tradle.Model',
-  id: 'onfido.CheckStatus',
+  id: 'tradle.onfido.CheckStatus',
   subClassOf: 'tradle.Enum',
   title: 'Onfido Operation Status',
   description: 'status of an Onfido operation: a report or a check',
@@ -39,7 +39,7 @@ const checkStatus = {
 
 const reportStatus = {
   type: 'tradle.Model',
-  id: 'onfido.ReportStatus',
+  id: 'tradle.onfido.ReportStatus',
   subClassOf: 'tradle.Enum',
   title: 'Onfido Report Status',
   description: 'status of an Onfido report',
@@ -59,7 +59,7 @@ const reportStatus = {
 
 const reportType = {
   type: 'tradle.Model',
-  id: 'onfido.ReportType',
+  id: 'tradle.onfido.ReportType',
   subClassOf: 'tradle.Enum',
   title: 'Onfido Report Type',
   properties: {
@@ -76,7 +76,7 @@ const reportType = {
 
 const check = {
   type: 'tradle.Model',
-  id: 'onfido.Check',
+  id: 'tradle.onfido.Check',
   title: 'Onfido Check',
   properties: {
     rawData: {
@@ -118,7 +118,7 @@ const check = {
 // for the state machine
 // const processStatus = {
 //   type: 'tradle.Model',
-//   id: 'onfido.ProcessStatus',
+//   id: 'tradle.onfido.ProcessStatus',
 //   subClassOf: 'tradle.Enum',
 //   title: 'Onfido Process Status',
 //   properties: {
@@ -139,7 +139,7 @@ const check = {
 
 const state = {
   type: 'tradle.Model',
-  id: 'onfido.ApplicationState',
+  id: 'tradle.onfido.ApplicationState',
   title: 'Onfido Application State',
   properties: {
     applicant: {
@@ -189,7 +189,7 @@ const state = {
 
 const stateStub = {
   type: 'tradle.Model',
-  id: 'onfido.ApplicationStateStub',
+  id: 'tradle.onfido.ApplicationStateStub',
   title: 'Onfido Application State Stub',
   inlined: true,
   properties: {

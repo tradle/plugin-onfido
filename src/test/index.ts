@@ -252,7 +252,7 @@ test('common case', loudAsync(async (t) => {
   await onfido.createCheck({ application, state, saveState: true })
   t.equal(state.result, undefined)
   t.ok(state.check)
-  t.same(state.checkStatus, { id: 'onfido.CheckStatus_inprogress', title: 'In progress' })
+  t.same(state.checkStatus, { id: 'tradle.onfido.CheckStatus_inprogress', title: 'In progress' })
 
   let reportIdx = 0
   sinon.stub(onfido.onfidoAPI.webhooks, 'handleEvent').callsFake(async (req, token) => {
@@ -302,7 +302,7 @@ test('common case', loudAsync(async (t) => {
   t.equal(vIdx, 3)
 
   // await onfido.createCheck({ state })
-  // t.same(state.result, { id: 'onfido.OpResult_consider', title: 'Failure' })
+  // t.same(state.result, { id: 'tradle.onfido.OpResult_consider', title: 'Failure' })
 
   t.end()
 }))
