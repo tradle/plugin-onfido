@@ -10,6 +10,6 @@ declare const APPLICATION = "tradle.Application";
 declare const DEFAULT_WEBHOOK_KEY = "onfido_webhook";
 declare const ONFIDO_WEBHOOK_EVENTS: string[];
 declare const DEFAULT_WEBHOOK_EVENTS: string[];
-declare const REPORTS: string[];
-declare const DEFAULT_REPORTS: string[];
+declare const REPORTS: any;
+declare const DEFAULT_REPORTS: any;
 export { IPROOV_SELFIE, SELFIE, PHOTO_ID, ADDRESS, APPLICANT, EMAIL_ADDRESS, NAME, VERIFICATION, APPLICATION, DEFAULT_WEBHOOK_KEY, ONFIDO_WEBHOOK_EVENTS, DEFAULT_WEBHOOK_EVENTS, REPORTS, DEFAULT_REPORTS };

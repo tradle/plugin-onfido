@@ -5,6 +5,7 @@ import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
 import { Onfido } from './'
 import APIUtils from './api-utils'
+import models from './models'
 import onfidoModels from './onfido-models'
 import { IOnfidoComponent, ILogger, CheckMapping } from './types'
 import {
@@ -52,14 +53,12 @@ export default class Checks implements IOnfidoComponent {
   public onfidoAPI: any
   public logger: ILogger
   public apiUtils: APIUtils
-  public models: any
   constructor (main:Onfido) {
     this.productsAPI = main.productsAPI
     this.bot = main.bot
     this.onfidoAPI = main.onfidoAPI
     this.logger = main.logger
     this.apiUtils = main.apiUtils
-    this.models = main.models
   }
 
   public create = async ({ req, application, state, reports, saveState }: {
@@ -90,7 +89,7 @@ export default class Checks implements IOnfidoComponent {
 
     check = sanitize(check).sanitized
     const current = buildResource({
-        models: this.models,
+        models,
         model: onfidoModels.check
       })
       .set({

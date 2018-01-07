@@ -27,10 +27,18 @@
     "@tradle/custom-models": "github:tradle/custom-models",
     "@tradle/engine": "^5.4.0",
     "@tradle/models": "github:tradle/models",
+    "@tradle/models-onfido": "github:tradle/models-onfido",
+    "@tradle/models-products-bot": "github:tradle/models-products-bot",
     "@types/node": "^8.0.51",
     "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
     "tape": "^4.8.0",
     "typeforce": "^1.11.7"
+  },
+  "peerDependencies": {
+    "@tradle/custom-models": "*",
+    "@tradle/models": "*",
+    "@tradle/models-onfido": "*",
+    "@tradle/models-products-bot": "*"
   }
 }

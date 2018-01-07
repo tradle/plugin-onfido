@@ -1,12 +1,13 @@
 import { models as baseModels } from '@tradle/models'
 import customModels = require('@tradle/custom-models')
-import mergeModels = require('@tradle/merge-models')
-import onfidoModels from './onfido-models'
 
-const models = mergeModels()
-  .add(baseModels, { validate: false })
-  .add(customModels, { validate: false })
-  .add(onfidoModels.all)
-  .get()
+const productsBotModels = require('@tradle/models-products-bot')
+const onfidoModels = require('@tradle/models-onfido')
+const models = {
+  ...baseModels,
+  ...customModels,
+  ...productsBotModels,
+  ...onfidoModels
+}
 
 export default models

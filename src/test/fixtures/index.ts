@@ -1,10 +1,10 @@
 import parseDataUri = require('parse-data-uri')
-import applicants = require('./applicants')
-import checks = require('./checks')
-import documents = require('./documents')
-import documentImages = require('./document-images')
-import tradle = require('./tradle')
-import inputs = require('./inputs')
+const applicants = require('./applicants')
+const checks = require('./checks')
+const documents = require('./documents')
+const documentImages = require('./document-images')
+const tradle = require('./tradle')
+const inputs = require('./inputs')
 
 inputs.license.file = parseDataUri(inputs.license.file).data
 inputs.selfie.file = parseDataUri(inputs.selfie.file).data

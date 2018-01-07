@@ -10,7 +10,6 @@ export default class Applicants implements IOnfidoComponent {
     apiUtils: APIUtils;
     padApplicantName: boolean;
     preCheckAddress: boolean;
-    models: any;
     private main;
     constructor(main: Onfido);
     createOrUpdate: ({req, application, state, form}: OnfidoState) => Promise<boolean>;

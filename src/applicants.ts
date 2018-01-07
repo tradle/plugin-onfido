@@ -40,11 +40,9 @@ export default class Applicants implements IOnfidoComponent {
   public apiUtils: APIUtils
   public padApplicantName: boolean
   public preCheckAddress: boolean
-  public models: any
   private main: Onfido
   constructor (main:Onfido) {
     this.main = main
-    this.models = main.models
     this.bot = main.productsAPI.bot
     this.onfidoAPI = main.onfidoAPI
     this.productsAPI = main.productsAPI

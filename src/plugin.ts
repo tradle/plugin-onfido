@@ -4,7 +4,7 @@ import omit = require('object.omit')
 import clone = require('clone')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
-import mergeModels = require('@tradle/merge-models')
+import models from './models'
 import onfidoModels from './onfido-models'
 import Applicants from './applicants'
 import Checks from './checks'
@@ -67,7 +67,6 @@ export default class Onfido implements IOnfidoComponent {
   public productsAPI:any
   public apiUtils: APIUtils
   public conf: any
-  public models: any
   constructor (opts: PluginOpts) {
     const {
       logger,
@@ -95,11 +94,6 @@ export default class Onfido implements IOnfidoComponent {
     this.productsAPI = productsAPI
     this.bot = productsAPI.bot
     this.conf = this.bot.conf.sub('onfido')
-    this.models = mergeModels()
-      .add(productsAPI.models.all)
-      .add(onfidoModels.all)
-      .get()
-
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
     this.preCheckAddress = preCheckAddress
@@ -133,7 +127,7 @@ export default class Onfido implements IOnfidoComponent {
 
       fresh = true
       state = buildResource({
-          models: this.models,
+          models,
           model: onfidoModels.state,
         })
         .set({
