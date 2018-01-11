@@ -56,3 +56,4 @@ export default class Onfido implements IOnfidoComponent {
     sync: () => Promise<void>;
     private getForm;
 }
+export { Onfido };

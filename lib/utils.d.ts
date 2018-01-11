@@ -18,7 +18,7 @@ export declare const getOnfidoCheckIdKey: (checkId: any) => string;
 export declare const haveFormsToCreateApplicant: (application: any) => boolean;
 export declare const getFormsToCreateApplicant: (application: any) => any[];
 export declare const unique: (arr: any) => any[];
-export declare const isApplicantInfoForm: (type: any) => string;
+export declare const isApplicantInfoForm: (type: any) => boolean;
 export declare const getApplicantProps: (forms: any) => ApplicantProps;
 export declare const normalizeDate: (date: any) => string;
 export declare const toYYYY_MM_DD_UTC: (date: any, separator: any) => string;
@@ -43,7 +43,5 @@ export declare const createOnfidoVerification: ({applicant, form, report}: {
 export declare const isComplete: (onfidoObject: any) => boolean;
 export declare const addLinks: (resource: any) => void;
 export declare const batchify: (arr: any, batchSize: any) => any[];
-export declare const stubFromParsedStub: (parsedStub: any) => {
-    id: any;
-};
+export declare const stubFromParsedStub: (parsedStub: any) => any;
 export declare const validateProductOptions: (opts: ProductOptions) => void;

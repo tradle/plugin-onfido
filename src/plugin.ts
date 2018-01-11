@@ -1,7 +1,4 @@
-import deepEqual = require('deep-equal')
-import pick = require('object.pick')
-import omit = require('object.omit')
-import clone = require('clone')
+import _ = require('lodash')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
 import models from './models'
@@ -143,7 +140,7 @@ export default class Onfido implements IOnfidoComponent {
     }
 
     const type = payload[TYPE]
-    let copy = clone(state)
+    let copy = _.cloneDeep(state)
     const { check } = state
     // nothing can be done until a check completes
     if (check) {
@@ -157,7 +154,7 @@ export default class Onfido implements IOnfidoComponent {
         this.putStatePointer({ application, state }),
         this.bot.save(state)
       ])
-    } else if (!deepEqual(state, copy)) {
+    } else if (!_.isEqual(state, copy)) {
       await this.bot.versionAndSave(state)
     }
   }
@@ -193,7 +190,7 @@ export default class Onfido implements IOnfidoComponent {
     const { body={}, status=-1 } = error
     const { type, fields } = body
     if (!(status === 422 || type === 'validation_error')) {
-      this.logger.error('unrecognized onfido error', pick(error, ['message', 'stack', 'name']))
+      this.logger.error('unrecognized onfido error', _.pick(error, ['message', 'stack', 'name']))
 
       // call this application "submitted"
       // this.onFinished()
@@ -237,7 +234,7 @@ export default class Onfido implements IOnfidoComponent {
       prefill = { [TYPE]: formType }
     } else {
       prefill = await this.apiUtils.getResource(form)
-      prefill = omit(prefill, [SIG])
+      prefill = _.omit(prefill, [SIG])
     }
 
     this.logger.debug(`requesting edit of ${formType}`)
@@ -482,6 +479,7 @@ export default class Onfido implements IOnfidoComponent {
   }
 }
 
+export { Onfido }
 const getStateKey = application => {
   return `${APPLICATION}_${application._permalink}_onfidoState`
 }

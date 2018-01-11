@@ -3,20 +3,19 @@ installSourceMaps()
 
 import test = require('tape')
 import sinon = require('sinon')
-import clone = require('clone')
-import omit = require('object.omit')
+import _ = require('lodash')
 import parseDataUri = require('parse-data-uri')
 import { TYPE, SIG } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
 import fakeResource = require('@tradle/build-resource/fake')
-import createPlugin from '../'
+import { createPlugin } from '../'
 import mock from './mock'
 import fixtures from './fixtures'
 import models from '../models'
 import { getEnumValueId, getLatestFormByType, addLinks, parseCheckURL } from '../utils'
 import onfidoModels from '../onfido-models'
-import { APPLICATION, REPORTS } from '../constants'
+import { APPLICATION, APPLICANT, REPORTS } from '../constants'
 
 type Forms = {
   name?: any
@@ -47,7 +46,7 @@ const TEST_PRODUCT = {
   forms: [
     'tradle.Name',
     'tradle.PhotoID',
-    'tradle.OnfidoApplicant',
+    APPLICANT
   ],
   properties: {}
 }
@@ -74,8 +73,8 @@ const setup = () => {
 
   addLinks(application)
 
-  const completedCheck = clone(fixtures.checks.complete)
-  const pendingCheck = clone(fixtures.checks.pending)
+  const completedCheck = _.cloneDeep(fixtures.checks.complete)
+  const pendingCheck = _.cloneDeep(fixtures.checks.pending)
 
   const state = {
     [TYPE]: onfidoModels.state.id,
@@ -171,7 +170,7 @@ test('common case', loudAsync(async (t) => {
   let vIdx = 0
   const importVerificationStub = sinon.stub(onfido.productsAPI, 'importVerification')
     .callsFake(async ({ verification }) => {
-      verification = omit(verification, SIG)
+      verification = _.omit(verification, SIG)
       if (vIdx === 0) {
         t.same(verification.document, formStubs.driving_license)
       } else if (vIdx === 1) {

@@ -82,6 +82,7 @@ export interface IOnfidoComponent {
 }
 
 export type OnfidoAddress = {
+  country: string
   building_number: number|string
   street: string
   town: string

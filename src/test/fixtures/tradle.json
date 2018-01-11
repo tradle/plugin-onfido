@@ -83,7 +83,7 @@
     "surname": "SONI"
   },
   "applicant": {
-    "_t": "tradle.OnfidoApplicant",
+    "_t": "tradle.onfido.Applicant",
     "_s": "OXfEDWlJ7zrXtlsdSxnVGiQVYkoSnFqrlaK7Eb9yIRse2ljb4wKKSmrP7l9YBliD4tcMM06uMkahB+zE7h1wU6der+RVLqcDUThGxqgiE17d6Hr3DSP5ED1HzdgRhS0xynJyJQHkpmg0d1VnzltH5BukHhJq9J+v75MdXMzBY3w=",
     "country": {
       "id": "tradle.Country_589d4aad918e33dec42dd38b80cc73616556178c",

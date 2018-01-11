@@ -1,4 +1,4 @@
-import deepEqual = require('deep-equal')
+import _ = require('lodash')
 import parseDataUri = require('parse-data-uri')
 import { TYPE } from '@tradle/constants'
 import onfidoModels from './onfido-models'
@@ -213,8 +213,4 @@ export default class Applicants implements IOnfidoComponent {
   }
 }
 
-const hasUpdate = ({ current, update }) => {
-  return Object.keys(update).some(key => {
-    return !deepEqual(update[key], current[key])
-  })
-}
+const hasUpdate = ({ current, update }) => !_.isMatch(current, update)

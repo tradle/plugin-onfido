@@ -13,7 +13,7 @@ import {
   REPORTS
 } from './constants'
 
-import Extractor from './extractor'
+import * as Extractor from './extractor'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const APPLICANT_PROPERTY_SETS = ['name', 'address', 'dob']
@@ -77,8 +77,8 @@ export const haveFormsToCreateApplicant = application => {
 
 export const getFormsToCreateApplicant = application => {
   const parsed = application.forms.slice().sort(sortDescendingByDate).map(stub => parseStub(stub))
-  const required = APPLICANT_PROPERTY_SETS.map(propertySet => {
-    return parsed.find(({ type }) => Extractor[propertySet][type])
+  const required = APPLICANT_PROPERTY_SETS.map(field => {
+    return parsed.find(({ type }) => Extractor.canExtract(field, type))
   })
 
   if (required.every(result => result)) {
@@ -99,22 +99,18 @@ export const unique = arr => {
   return uniq
 }
 
-export const isApplicantInfoForm = type => {
-  return Object.keys(Extractor).find(propertySet => Extractor[propertySet][type])
-}
-
+export const isApplicantInfoForm = type => Extractor.hasForm(type)
 export const getApplicantProps = (forms):ApplicantProps => {
   const {
     name,
     address,
     dob
-  } = APPLICANT_PROPERTY_SETS.reduce((result, propertySet) => {
-    result[propertySet] = find(forms, form => {
-      const extractor = Extractor[propertySet][form[TYPE]]
-      if (extractor) return extractor(form)
+  }:any = APPLICANT_PROPERTY_SETS.reduce((fields, field) => {
+    fields[field] = find(forms, form => {
+      return Extractor.extract(field, form[TYPE], form)
     })
 
-    return result
+    return fields
   }, {})
 
   const props:ApplicantProps = {}
@@ -125,7 +121,7 @@ export const getApplicantProps = (forms):ApplicantProps => {
   return props
 }
 
-export const normalizeDate = (date) => {
+export const normalizeDate = (date):string => {
   if (typeof date === 'string') {
     if (ISO_DATE.test(date)) {
       return date
@@ -137,7 +133,7 @@ export const normalizeDate = (date) => {
 }
 
 // courtesy of http://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
-export const toYYYY_MM_DD_UTC = (date, separator) => {
+export const toYYYY_MM_DD_UTC = (date, separator):string => {
   const mm = date.getUTCMonth() + 1 // getUTCMonth() is zero-based
   const dd = date.getUTCDate()
   return [
@@ -287,7 +283,7 @@ export const batchify = (arr, batchSize) => {
 
 export const stubFromParsedStub = (parsedStub) => {
   const id = buildResource.id(parsedStub)
-  const stub = { id }
+  const stub:any = { id }
   if (parsedStub.title) {
     stub.title = parsedStub.title
   }

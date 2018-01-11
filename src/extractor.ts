@@ -1,3 +1,4 @@
+import _ = require('lodash')
 import Debug = require('debug')
 import { TYPE } from '@tradle/constants'
 import ONFIDO_PROP_INFO from './onfido-props'
@@ -15,8 +16,7 @@ import {
   OnfidoAddress
 } from './types'
 
-import { name as packageName } from '../package.json'
-
+const packageName = require('../package.json').name
 const debug = Debug(packageName + ':extractor')
 const ADDRESS_PROPS = ['building_number', 'street', 'town', 'postcode']
 
@@ -28,16 +28,16 @@ const toOnfidoName = name => {
   }
 }
 
-const getAddress = (form) => {
+const getAddress = (form:any):OnfidoAddress => {
   const countryCode = getCountryCode(form.country)
   if (!countryCode) {
     debug(`ignoring address with country "${form.country.title}", don't know country 3-letter country code`)
     return
   }
 
-  const address:OnfidoAddress = {
+  const address = {
     country: countryCode
-  }
+  } as OnfidoAddress
 
   ADDRESS_PROPS.forEach(prop => {
     const propInfo = ONFIDO_PROP_INFO[prop]
@@ -52,7 +52,7 @@ const getAddress = (form) => {
   return address
 }
 
-const getDateOfBirth = (form) => {
+const getDateOfBirth = (form:any):string|void => {
   let date
   if (form[TYPE] === APPLICANT) {
     date = form.dateOfBirth
@@ -81,7 +81,7 @@ const getCountryCode = (country) => {
   }
 }
 
-export default {
+export const byProp = {
   name: {
     [NAME]: toOnfidoName,
     [APPLICANT]: toOnfidoName
@@ -94,3 +94,25 @@ export default {
     [APPLICANT]: getDateOfBirth
   }
 }
+
+export const byForm = _.transform(byProp, (result, formToExtractor, key) => {
+  _.each(formToExtractor, (extractor, formType) => {
+    _.set(result, [formType, key], extractor)
+  })
+}, {})
+
+export const getExtractor = (field:string, fromFormType:string):Function|void => {
+  return byProp[field][fromFormType]
+}
+
+export const canExtract = (field:string, fromFormType:string) => {
+  return !!getExtractor(field, fromFormType)
+}
+
+export const extract = (field, fromFormType, form) => {
+  const fn = getExtractor(field, fromFormType)
+  return fn && fn(form)
+}
+
+export const hasField = (field:string) => field in byProp
+export const hasForm = (formType:string) => formType in byForm

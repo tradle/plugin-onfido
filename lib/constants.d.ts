@@ -1,8 +1,8 @@
 declare const IPROOV_SELFIE = "tradle.IProovSelfie";
 declare const SELFIE = "tradle.Selfie";
 declare const PHOTO_ID = "tradle.PhotoID";
-declare const ADDRESS = "tradle.OnfidoAddress";
-declare const APPLICANT = "tradle.OnfidoApplicant";
+declare const ADDRESS = "tradle.onfido.Address";
+declare const APPLICANT = "tradle.onfido.Applicant";
 declare const EMAIL_ADDRESS = "tradle.EmailAddress";
 declare const NAME = "tradle.Name";
 declare const VERIFICATION = "tradle.Verification";

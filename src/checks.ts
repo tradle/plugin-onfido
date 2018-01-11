@@ -1,6 +1,4 @@
-import pick = require('object.pick')
-import clone = require('clone')
-import deepEqual = require('deep-equal')
+import _ = require('lodash')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
 import { Onfido } from './'
@@ -184,12 +182,12 @@ export default class Checks implements IOnfidoComponent {
 
     if (reports.length) {
       let willAutoSave = !!req
-      const appCopy = clone(application)
+      const appCopy = _.cloneDeep(application)
       await Promise.all(reports.map(report => {
         return this.processReport({ req, application, state, check: current, report })
       }))
 
-      if (!willAutoSave && !deepEqual(application, appCopy)) {
+      if (!willAutoSave && !_.isEqual(application, appCopy)) {
         await this.productsAPI.saveNewVersionOfApplication({ application })
       }
     }
@@ -245,14 +243,13 @@ export default class Checks implements IOnfidoComponent {
 
         const signed = await this.bot.sign(verification)
         addLinks(signed)
-        await Promise.all([
-          this.bot.save(signed),
-          this.productsAPI.importVerification({
-            req,
-            application,
-            verification: signed
-          })
-        ])
+        this.productsAPI.importVerification({
+          req,
+          application,
+          verification: signed
+        })
+
+        await this.bot.save(signed)
       }))
     }
   }
