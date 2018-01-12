@@ -50,6 +50,8 @@ import {
 //   [SELFIE]: true
 // }
 
+const RETAKE_SELFIE_MESSAGE = 'Please retake your selfie, centering your face'
+
 export default class Onfido implements IOnfidoComponent {
   public applicants:Applicants
   public checks:Checks
@@ -221,26 +223,31 @@ export default class Onfido implements IOnfidoComponent {
       return true
     }
 
-    const { application } = req
-    const form = this.productsAPI.state.getLatestFormByType(application, formType)
+    const { user, application } = req
+    const form = this.productsAPI.state.getLatestFormByType(application.forms, formType)
     if (!form) {
       this.logger.error(`failed to find form for property: ${onfidoProp}`)
       throw error
     }
 
     const message = propInfo.error || Errors.INVALID_VALUE
-    let prefill
     if (formType === SELFIE) {
-      prefill = { [TYPE]: formType }
-    } else {
-      prefill = await this.apiUtils.getResource(form)
-      prefill = _.omit(prefill, [SIG])
+      await this.productsAPI.requestItem({
+        req,
+        user,
+        application,
+        item: SELFIE,
+        message: RETAKE_SELFIE_MESSAGE
+      })
+
+      return
     }
 
+    const prefill = _.omit(await this.apiUtils.getResource(form, req), SIG)
     this.logger.debug(`requesting edit of ${formType}`)
     await this.productsAPI.requestEdit({
       req,
-      object: prefill,
+      item: prefill,
       details: {
         errors: [
           {
