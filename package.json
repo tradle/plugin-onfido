@@ -15,8 +15,8 @@
     "@tradle/build-resource": "^2.14.1",
     "@tradle/constants": "^2.1.0",
     "@tradle/merge-models": "^2.1.0",
-    "@tradle/validate-model": "^4.0.0",
-    "@tradle/validate-resource": "^2.13.0",
+    "@tradle/validate-model": "^5.1.1",
+    "@tradle/validate-resource": "^2.17.0",
     "lodash": "^4.17.4",
     "parse-data-uri": "^0.2.0"
   },
