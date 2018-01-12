@@ -69,7 +69,7 @@ export default class Applicants implements IOnfidoComponent {
 
     const parsedStubsAndForms = parsedStubs.slice()
     if (form) {
-      const idx = parsedStubs.findIndex(stub => stub.id === fStub.id)
+      const idx = parsedStubs.findIndex(({ link }) => link === form._link)
       if (idx !== -1) {
         // no need to look this one up, we already have the body
         parsedStubsAndForms[idx] = form
