@@ -233,25 +233,27 @@ export default class Checks implements IOnfidoComponent {
     }
 
     report = sanitize(report).sanitized
-    if (report.result === 'clear') {
-      await Promise.all(stubs.map(async (stub) => {
-        const verification = createOnfidoVerification({
-          applicant,
-          report,
-          form: await this.apiUtils.getResource(stub)
-        })
+    if (report.result !== 'clear') return
 
-        const signed = await this.bot.sign(verification)
-        addLinks(signed)
-        this.productsAPI.importVerification({
-          req,
-          application,
-          verification: signed
-        })
+    const applicantPermalink = parseStub(applicant).permalink
+    const userPromise = this.apiUtils.getUser(applicantPermalink, req)
+    await Promise.all(stubs.map(async (stub) => {
+      const verification = createOnfidoVerification({
+        applicant,
+        report,
+        form: await this.apiUtils.getResource(stub, req)
+      })
 
-        await this.bot.save(signed)
-      }))
-    }
+      const signed = await this.bot.sign(verification)
+      addLinks(signed)
+      this.productsAPI.importVerification({
+        user: await userPromise,
+        application,
+        verification: signed
+      })
+
+      await this.bot.save(signed)
+    }))
   }
 
   public lookupByCheckId = async (checkId:string) => {
@@ -385,15 +387,17 @@ export default class Checks implements IOnfidoComponent {
   public sync = async () => {
     const pending = await this.listPending()
     const batches = batchify(pending, CHECK_SYNC_BATCH_SIZE)
-    for (const batch of batches) {
-      await Promise.all(pending.map(async (current) => {
-        const update = await this.fetch(current)
-        const status = fromOnfido[update.status] || update.status
-        if (status === current.status) return
+    const processOne = async (current) => {
+      const update = await this.fetch(current)
+      const status = fromOnfido[update.status] || update.status
+      if (status === current.status) return
 
-        const { application, state, check } = await this.lookupByCheckId(current.checkId)
-        await this.processCheck({ application, state, current, update, saveState: true })
-      }))
+      const { application, state, check } = await this.lookupByCheckId(current.checkId)
+      await this.processCheck({ application, state, current, update, saveState: true })
+    }
+
+    for (const batch of batches) {
+      await Promise.all(batch.map(processOne))
     }
   }
 }

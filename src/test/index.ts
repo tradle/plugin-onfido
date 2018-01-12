@@ -93,6 +93,7 @@ const setup = () => {
     state,
     completedCheck,
     pendingCheck,
+    user: applicantInfo.user
   }
 }
 
@@ -102,8 +103,17 @@ test('common case', loudAsync(async (t) => {
     state,
     application,
     completedCheck,
-    pendingCheck
+    pendingCheck,
+    user
   } = setup()
+
+  onfido.bot.users.get = async (id) => {
+    if (id !== user.id) {
+      throw new Error('user not found')
+    }
+
+    return user
+  }
 
   const uploadLivePhotoStub = sinon.stub(onfido.onfidoAPI.applicants, 'uploadLivePhoto')
     .callsFake(async (id, photo) => {
@@ -558,6 +568,9 @@ function newApplicantInfo () {
   })
 
   return {
+    user: {
+      id: buildResource.permalink(identity)
+    },
     identity,
     stub
   }

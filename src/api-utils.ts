@@ -19,10 +19,17 @@ export default class APIUtils {
     this.db = productsAPI.bot.db
   }
 
-  public getResource = async (resource):Promise<any> => {
+  public getResource = async (resource, req?):Promise<any> => {
     if (resource[TYPE]) return resource
 
-    const { type, permalink } = resource.id ? parseStub(resource) : resource
+    const { type, link, permalink } = resource.id ? parseStub(resource) : resource
+    if (req) {
+      const { payload } = req
+      if (payload && payload._link === link) {
+        return payload
+      }
+    }
+
     const result = await this.db.get({
       [TYPE]: type,
       _permalink: permalink
@@ -30,6 +37,17 @@ export default class APIUtils {
 
     await this.bot.resolveEmbeds(result)
     return result
+  }
+
+  public getUser = async (permalink:string, req?):Promise<any> => {
+    if (req) {
+      const { user } = req
+      if (user && user.id === permalink) {
+        return user
+      }
+    }
+
+    return await this.bot.users.get(permalink)
   }
 
   public checkAddress = async ({ address }) => {

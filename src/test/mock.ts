@@ -114,6 +114,11 @@ function mockBot () {
     versionAndSave,
     kv: keyValueStore(),
     conf: keyValueStore(),
+    users: {
+      get: async (id) => {
+        throw new Error('users.get() not mocked')
+      }
+    },
     db: {
       get: async (props) => {
         const val = db[getKey(props)]

@@ -7,7 +7,8 @@ export default class APIUtils {
     logger: ILogger;
     private db;
     constructor({logger, onfidoAPI, productsAPI}: Onfido);
-    getResource: (resource: any) => Promise<any>;
+    getResource: (resource: any, req?: any) => Promise<any>;
+    getUser: (permalink: string, req?: any) => Promise<any>;
     checkAddress: ({address}: {
         address: any;
     }) => Promise<boolean>;

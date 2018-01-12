@@ -429,7 +429,7 @@ export default class Onfido implements IOnfidoComponent {
 
   public uploadAttachments = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
     if (!state.selfie) {
-      const selfie = await this.getForm({ type: SELFIE, application, form })
+      const selfie = await this.getForm({ type: SELFIE, application, form, req })
       if (selfie) {
         const ok = await this.applicants.uploadSelfie({ req, application, state, form: selfie })
         if (!ok) return false
@@ -437,7 +437,7 @@ export default class Onfido implements IOnfidoComponent {
     }
 
     if (!state.photoID) {
-      const photoID = await this.getForm({ type: PHOTO_ID, application, form })
+      const photoID = await this.getForm({ type: PHOTO_ID, application, form, req })
       if (photoID) {
         const ok = await this.applicants.uploadPhotoID({ req, application, state, form: photoID })
         if (!ok) return false
@@ -469,12 +469,12 @@ export default class Onfido implements IOnfidoComponent {
     await this.checks.sync()
   }
 
-  private getForm = async ({ type, application, form }) => {
+  private getForm = async ({ type, application, form, req }) => {
     if (type === form[TYPE]) return form
 
     const parsedStub = getLatestFormByType(application, type)
     if (parsedStub) {
-      return await this.apiUtils.getResource(parsedStub)
+      return await this.apiUtils.getResource(parsedStub, req)
     }
   }
 }

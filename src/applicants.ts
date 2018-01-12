@@ -68,15 +68,7 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     const parsedStubsAndForms = parsedStubs.slice()
-    if (form) {
-      const idx = parsedStubs.findIndex(({ link }) => link === form._link)
-      if (idx !== -1) {
-        // no need to look this one up, we already have the body
-        parsedStubsAndForms[idx] = form
-      }
-    }
-
-    const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item)))
+    const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item, req)))
     const props = getApplicantProps(forms)
     const { first_name, last_name, dob, addresses=[] } = props
     if (!(first_name && last_name && dob && addresses.length)) {
@@ -134,8 +126,9 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     if (props) {
-      if (hasUpdate({ current: state.onfidoApplicant, update: props })) {
-        await this.onfidoAPI.applicants.update(props)
+      const current = state.onfidoApplicant
+      if (hasUpdate({ current, update: props })) {
+        await this.onfidoAPI.applicants.update(current.id, props)
       }
 
       return true
