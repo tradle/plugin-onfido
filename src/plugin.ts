@@ -11,7 +11,8 @@ import {
   PluginOpts,
   IncomingFormReq,
   OnfidoState,
-  ProductOptions
+  ProductOptions,
+  OnfidoResult
 } from './types'
 
 import APIUtils from './api-utils'
@@ -309,7 +310,11 @@ export default class Onfido implements IOnfidoComponent {
     return await this.conf.get(this.webhookKey)
   }
 
-  public processWebhookEvent = async ({ req, res, body, desiredResult }) => {
+  public processWebhookEvent = async ({ req, body, desiredResult }: {
+    req:any,
+    body?:any,
+    desiredResult?: OnfidoResult
+  }) => {
     let webhook
     try {
       webhook = await this.getWebhook()
@@ -492,7 +497,7 @@ const getStateKey = application => {
 }
 
 const httpError = (status, message) => {
-  const err = new Error('message')
+  const err:any = new Error('message')
   err.status = status
   return err
 }

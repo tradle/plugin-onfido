@@ -1,14 +1,14 @@
 import crypto = require('crypto')
 import { EventEmitter } from 'events'
+// import _ = require('lodash')
 import typeforce = require('typeforce')
-import pick = require('object.pick')
 import { TYPE, SIG } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import fakeResource = require('@tradle/build-resource/fake')
 import models from '../models'
 import ConsoleLogger from './console-logger'
 import { Onfido, createPlugin } from '../'
-import { addLinks } from '../utils'
+import { addLinks, parseStub } from '../utils'
 import { DEFAULT_WEBHOOK_KEY } from '../constants'
 
 const keyValueStore = () => {

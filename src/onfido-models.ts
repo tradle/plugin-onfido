@@ -7,12 +7,19 @@ const check = onfidoModels['tradle.onfido.Check']
 const state = onfidoModels['tradle.onfido.ApplicationState']
 const stateStub = onfidoModels['tradle.onfido.ApplicationStateStub']
 
-export default {
+const models = {
   opResult,
   checkStatus,
   reportStatus,
   reportType,
   check,
   state,
-  stateStub
+  stateStub,
+  all: {}
 }
+
+for (let name in models) {
+  models.all[name] = models[name]
+}
+
+export default models

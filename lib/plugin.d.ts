@@ -1,6 +1,6 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions, OnfidoResult } from './types';
 import APIUtils from './api-utils';
 export default class Onfido implements IOnfidoComponent {
     applicants: Applicants;
@@ -41,11 +41,10 @@ export default class Onfido implements IOnfidoComponent {
         events?: string[];
     }) => Promise<any>;
     getWebhook: () => Promise<any>;
-    processWebhookEvent: ({req, res, body, desiredResult}: {
+    processWebhookEvent: ({req, body, desiredResult}: {
         req: any;
-        res: any;
-        body: any;
-        desiredResult: any;
+        body?: any;
+        desiredResult?: OnfidoResult;
     }) => Promise<void>;
     private handleForm;
     private _handleForm;

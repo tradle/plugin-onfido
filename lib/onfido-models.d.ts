@@ -1,4 +1,4 @@
-declare const _default: {
+declare const models: {
     opResult: any;
     checkStatus: any;
     reportStatus: any;
@@ -6,5 +6,6 @@ declare const _default: {
     check: any;
     state: any;
     stateStub: any;
+    all: {};
 };
-export default _default;
+export default models;

@@ -232,7 +232,7 @@ export const getCompletedReports = ({ current, update }) => {
 
 export const createOnfidoVerification = ({ applicant, form, report }) => {
   const aspect = report.name === 'facial_similarity' ? 'facial similarity' : 'authenticity'
-  const method = {
+  const method:any = {
     [TYPE]: 'tradle.APIBasedVerificationMethod',
     api: {
       [TYPE]: 'tradle.API',

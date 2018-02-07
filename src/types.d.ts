@@ -5,6 +5,8 @@ import APIUtils from './api-utils'
 //     export default value;
 // }
 
+export type OnfidoResult = 'clear' | 'consider'
+
 export type Address = {
   building_number: number|string
   flat_number?: string
@@ -30,7 +32,6 @@ export type ApplicantProps = {
 }
 
 export type Document = {
-  link: string
   type: string
   file: Buffer
   filename: string

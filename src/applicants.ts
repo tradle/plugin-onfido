@@ -4,7 +4,8 @@ import { TYPE } from '@tradle/constants'
 import onfidoModels from './onfido-models'
 import {
   ApplicantProps,
-  ILogger
+  ILogger,
+  Document
 } from './types'
 
 import {
@@ -183,7 +184,7 @@ export default class Applicants implements IOnfidoComponent {
     const { scan, documentType } = form
     const { mimeType, data } = parseDataUri(scan.url)
     const onfidoDocType = documentType.id === 'passport' ? 'passport' : 'driving_licence'
-    const document = {
+    const document:Document = {
       type: onfidoDocType,
       file: data,
       filename: `${onfidoDocType}-${digest(data)}.${getExtension(mimeType)}`

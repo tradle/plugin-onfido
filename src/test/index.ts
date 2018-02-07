@@ -76,7 +76,7 @@ const setup = () => {
   const completedCheck = _.cloneDeep(fixtures.checks.complete)
   const pendingCheck = _.cloneDeep(fixtures.checks.pending)
 
-  const state = {
+  const state:any = {
     [TYPE]: onfidoModels.state.id,
     [SIG]: mock.sig(),
     applicant: applicantInfo.stub,

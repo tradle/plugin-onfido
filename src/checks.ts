@@ -141,7 +141,7 @@ export default class Checks implements IOnfidoComponent {
 
     // check.reportsResults = reportsResults
     if (report.status === 'complete') {
-      await this.processCompletedReport({ req, application, state, check, report })
+      await this.processCompletedReport({ req, application, state, report })
     }
   }
 
@@ -159,7 +159,7 @@ export default class Checks implements IOnfidoComponent {
 
     const { applicant } = state
     const { status, result } = update
-    const newCheckProps = {
+    const newCheckProps:any = {
       status: fromOnfido[status] || status
     }
 
