@@ -218,7 +218,12 @@ export default class Checks implements IOnfidoComponent {
     const { applicant, applicantDetails, selfie, photoID } = state
     const type = report.name
 
-    this.logger.debug(`report ${type} complete for applicant ${applicant.id}`)
+    const applicantPermalink = parseStub(applicant).permalink
+    this.logger.debug('report complete', {
+      applicant: applicantPermalink,
+      type,
+      result: report.result
+    })
 
     let stubs = []
     if (type === 'document') {
@@ -235,9 +240,13 @@ export default class Checks implements IOnfidoComponent {
     report = sanitize(report).sanitized
     if (report.result !== 'clear') return
 
-    const applicantPermalink = parseStub(applicant).permalink
     const userPromise = this.apiUtils.getUser(applicantPermalink, req)
     await Promise.all(stubs.map(async (stub) => {
+      this.logger.debug('creating verification for', {
+        applicant: applicantPermalink,
+        form: stub
+      })
+
       const verification = createOnfidoVerification({
         applicant,
         report,

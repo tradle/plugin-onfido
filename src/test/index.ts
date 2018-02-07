@@ -9,7 +9,6 @@ import { TYPE, SIG } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
 import fakeResource = require('@tradle/build-resource/fake')
-import { createPlugin } from '../'
 import mock from './mock'
 import fixtures from './fixtures'
 import models from '../models'
