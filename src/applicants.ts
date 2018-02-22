@@ -44,7 +44,7 @@ export default class Applicants implements IOnfidoComponent {
   private main: Onfido
   constructor (main:Onfido) {
     this.main = main
-    this.bot = main.productsAPI.bot
+    this.bot = main.bot
     this.onfidoAPI = main.onfidoAPI
     this.productsAPI = main.productsAPI
     this.logger = main.logger
@@ -58,9 +58,11 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error('expected "state"')
     }
 
+    const productOptions = this.main.getProductOptions(application.requestFor)
     const fStub = form && this.apiUtils.stub(form)
     const parsedStubs = getFormsToCreateApplicant({
-      forms: application.forms.concat(fStub || [])
+      forms: application.forms.concat(fStub || []),
+      reports: productOptions.reports
     })
 
     if (!parsedStubs) {
@@ -102,14 +104,6 @@ export default class Applicants implements IOnfidoComponent {
       throw err
     }
   }
-
-  // public create = async ({ req, state, application, form }) => {
-  //   const forms = application.forms.concat(form)
-  //   const parsedStubs = getFormsToCreateApplicant(application)
-
-  //   const props = getApplicantProps([form])
-  //   return this.onfidoAPI.applicants.update()
-  // }
 
   public update = async ({ req, application, state, form, props }: {
     application: any

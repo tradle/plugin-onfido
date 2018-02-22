@@ -16,7 +16,8 @@ import {
 import * as Extractor from './extractor'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
-const APPLICANT_PROPERTY_SETS = ['name', 'address', 'dob']
+const APPLICANT_PROPERTY_SETS = ['name', 'dob', 'address']
+const APPLICANT_PROPERTY_SETS_MIN = ['name', 'dob']
 const createFilterForType = query => ({ type }) => type === query
 const { sanitize } = validateResource.utils
 
@@ -71,13 +72,14 @@ export const getOnfidoCheckIdKey = checkId => {
   return `onfido_check_${checkId}`
 }
 
-export const haveFormsToCreateApplicant = application => {
-  return !!getFormsToCreateApplicant(application)
-}
+export const getFormsToCreateApplicant = ({ forms, reports }) => {
+  const parsed = forms
+    .slice()
+    .sort(sortDescendingByDate)
+    .map(parseStub)
 
-export const getFormsToCreateApplicant = application => {
-  const parsed = application.forms.slice().sort(sortDescendingByDate).map(stub => parseStub(stub))
-  const required = APPLICANT_PROPERTY_SETS.map(field => {
+  const propSets = reports.includes('identity') ? APPLICANT_PROPERTY_SETS : APPLICANT_PROPERTY_SETS_MIN
+  const required = propSets.map(field => {
     return parsed.find(({ type }) => Extractor.canExtract(field, type))
   })
 

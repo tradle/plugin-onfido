@@ -12,14 +12,14 @@ export default class Applicants implements IOnfidoComponent {
     preCheckAddress: boolean;
     private main;
     constructor(main: Onfido);
-    createOrUpdate: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
-    update: ({req, application, state, form, props}: {
+    createOrUpdate: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
+    update: ({ req, application, state, form, props }: {
         application: any;
         state: any;
         req?: any;
         form?: any;
         props?: any;
     }) => Promise<boolean>;
-    uploadSelfie: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
-    uploadPhotoID: ({req, application, state, form}: OnfidoState) => Promise<boolean>;
+    uploadSelfie: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
+    uploadPhotoID: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
 }

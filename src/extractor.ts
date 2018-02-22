@@ -5,7 +5,8 @@ import ONFIDO_PROP_INFO from './onfido-props'
 import {
   NAME,
   APPLICANT,
-  ADDRESS
+  ADDRESS,
+  PG_PERSONAL_DETAILS
 } from './constants'
 
 import {
@@ -91,7 +92,8 @@ export const byProp = {
     [ADDRESS]: getAddress
   },
   dob: {
-    [APPLICANT]: getDateOfBirth
+    [APPLICANT]: getDateOfBirth,
+    [PG_PERSONAL_DETAILS]: getDateOfBirth
   }
 }
 

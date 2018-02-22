@@ -1,3 +1,4 @@
+import { NAME, APPLICANT, ADDRESS, PG_PERSONAL_DETAILS } from './constants';
 import { OnfidoAddress } from './types';
 export declare const byProp: {
     name: {
@@ -16,6 +17,7 @@ export declare const byProp: {
     };
     dob: {
         [APPLICANT]: (form: any) => string | void;
+        [PG_PERSONAL_DETAILS]: (form: any) => string | void;
     };
 };
 export declare const byForm: any;

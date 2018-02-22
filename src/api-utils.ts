@@ -3,7 +3,6 @@ import buildResource = require('@tradle/build-resource')
 import { equalish, parseStub } from './utils'
 import { ILogger } from './types'
 import { Onfido } from './'
-import models from './models'
 
 export default class APIUtils {
   public productsAPI: any
@@ -11,12 +10,14 @@ export default class APIUtils {
   public bot: any
   public logger: ILogger
   private db: any
-  constructor ({ logger, onfidoAPI, productsAPI }: Onfido) {
+  private models: any
+  constructor ({ logger, bot, onfidoAPI, productsAPI, models }: Onfido) {
     this.logger = logger
     this.onfidoAPI = onfidoAPI
     this.productsAPI = productsAPI
-    this.bot = productsAPI.bot
-    this.db = productsAPI.bot.db
+    this.bot = bot
+    this.db = bot.db
+    this.models = models
   }
 
   public getResource = async (resource, req?):Promise<any> => {
@@ -89,14 +90,14 @@ export default class APIUtils {
 
   public stub = (resource:any) => {
     return buildResource.stub({
-      models,
+      models: this.models,
       resource
     })
   }
 
   public setProps = (resource, properties) => {
     buildResource.set({
-      models,
+      models: this.models,
       resource,
       properties
     })

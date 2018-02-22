@@ -6,10 +6,11 @@ export default class APIUtils {
     bot: any;
     logger: ILogger;
     private db;
-    constructor({logger, onfidoAPI, productsAPI}: Onfido);
+    private models;
+    constructor({logger, bot, onfidoAPI, productsAPI, models}: Onfido);
     getResource: (resource: any, req?: any) => Promise<any>;
     getUser: (permalink: string, req?: any) => Promise<any>;
-    checkAddress: ({address}: {
+    checkAddress: ({ address }: {
         address: any;
     }) => Promise<boolean>;
     stub: (resource: any) => any;

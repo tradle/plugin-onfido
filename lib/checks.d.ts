@@ -8,21 +8,21 @@ export default class Checks implements IOnfidoComponent {
     logger: ILogger;
     apiUtils: APIUtils;
     constructor(main: Onfido);
-    create: ({req, application, state, reports, saveState}: {
+    create: ({ req, application, state, reports, saveState }: {
         req?: any;
         application: any;
         state: any;
         reports: string[];
         saveState: boolean;
     }) => Promise<any>;
-    processReport: ({req, application, state, check, report}: {
+    processReport: ({ req, application, state, check, report }: {
         req: any;
         application: any;
         state: any;
         check: any;
         report: any;
     }) => Promise<void>;
-    processCheck: ({req, application, state, current, update, saveState}: {
+    processCheck: ({ req, application, state, current, update, saveState }: {
         req?: any;
         saveState: boolean;
         application: any;
@@ -30,7 +30,7 @@ export default class Checks implements IOnfidoComponent {
         current: any;
         update: any;
     }) => Promise<any>;
-    processCompletedReport: ({req, application, state, report}: {
+    processCompletedReport: ({ req, application, state, report }: {
         req: any;
         application: any;
         state: any;
@@ -41,12 +41,12 @@ export default class Checks implements IOnfidoComponent {
         state: any;
         check: any;
     }>;
-    saveCheckMapping: ({state, check}: {
+    saveCheckMapping: ({ state, check }: {
         state: any;
         check: any;
     }) => Promise<void>;
     getCheckMapping: (checkId: string) => Promise<CheckMapping>;
-    fetch: ({applicantId, checkId}: {
+    fetch: ({ applicantId, checkId }: {
         applicantId: string;
         checkId: string;
     }) => Promise<any>;

@@ -1,4 +1,5 @@
 import { ApplicantProps, ProductOptions } from './types';
+declare const sanitize: any;
 export { sanitize };
 export declare const getLatestFormByType: (application: any, type: string) => any;
 export declare const getLatestForm: (application: any, filter: Function) => any;
@@ -15,8 +16,10 @@ export declare const parseCheckURL: (url: any) => {
     checkId: any;
 };
 export declare const getOnfidoCheckIdKey: (checkId: any) => string;
-export declare const haveFormsToCreateApplicant: (application: any) => boolean;
-export declare const getFormsToCreateApplicant: (application: any) => any[];
+export declare const getFormsToCreateApplicant: ({ forms, reports }: {
+    forms: any;
+    reports: any;
+}) => any[];
 export declare const unique: (arr: any) => any[];
 export declare const isApplicantInfoForm: (type: any) => boolean;
 export declare const getApplicantProps: (forms: any) => ApplicantProps;
@@ -31,11 +34,11 @@ export declare const hasTwoSides: (onfidoType: any) => boolean;
 export declare const pickNonNull: (obj: any) => {};
 export declare const ensureNoPendingCheck: (state: any) => void;
 export declare const getEnumValueId: (value: any) => any;
-export declare const getCompletedReports: ({current, update}: {
+export declare const getCompletedReports: ({ current, update }: {
     current: any;
     update: any;
 }) => any;
-export declare const createOnfidoVerification: ({applicant, form, report}: {
+export declare const createOnfidoVerification: ({ applicant, form, report }: {
     applicant: any;
     form: any;
     report: any;

@@ -39,15 +39,12 @@ function mockClient (opts={}) {
   const bot = mockBot()
   const plugin = createPlugin({
     logger: new ConsoleLogger(),
+    bot,
     onfidoAPI,
     productsAPI: {
-      models: {
-        all: models
-      },
       importVerification: (verification) => {
         throw new Error('mock me')
       },
-      bot,
       saveNewVersionOfApplication: async ({ application }) => {
         return await bot.versionAndSave(application)
       },
@@ -106,6 +103,7 @@ function mockBot () {
   }
 
   return {
+    models,
     resolveEmbeds: () => {},
     sign,
     save,

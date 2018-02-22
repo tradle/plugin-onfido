@@ -64,6 +64,7 @@ export type ProductOptions = {
 
 export type PluginOpts = {
   logger: ILogger
+  bot: any
   onfidoAPI: any
   productsAPI: any
   products: ProductOptions[]

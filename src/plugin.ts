@@ -1,7 +1,7 @@
 import _ = require('lodash')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
-import models from './models'
+import baseModels from './models'
 import onfidoModels from './onfido-models'
 import Applicants from './applicants'
 import Checks from './checks'
@@ -67,10 +67,15 @@ export default class Onfido implements IOnfidoComponent {
   public productsAPI:any
   public apiUtils: APIUtils
   public conf: any
+  public get models() {
+    return this.bot.models
+  }
+
   constructor (opts: PluginOpts) {
     const {
       logger,
       onfidoAPI,
+      bot,
       products,
       productsAPI,
       padApplicantName,
@@ -92,7 +97,7 @@ export default class Onfido implements IOnfidoComponent {
     })
 
     this.productsAPI = productsAPI
-    this.bot = productsAPI.bot
+    this.bot = bot
     this.conf = this.bot.conf.sub('onfido')
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
@@ -127,7 +132,7 @@ export default class Onfido implements IOnfidoComponent {
 
       fresh = true
       state = buildResource({
-          models,
+          models: baseModels,
           model: onfidoModels.state,
         })
         .set({
@@ -171,7 +176,7 @@ export default class Onfido implements IOnfidoComponent {
     }
   }
 
-  private getProductOptions = (productModelId:string):ProductOptions => {
+  public getProductOptions = (productModelId:string):ProductOptions => {
     return this.products.find(({ product }) => product === productModelId)
   }
 
