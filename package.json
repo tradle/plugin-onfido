@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "node lib/test",
-    "precommit": "npm run copy-static-assets && npm test",
+    "precommit": "npm run copy-static-assets && tsc && npm test",
     "copy-static-assets": "cp src/test/fixtures/*.json lib/test/fixtures/"
   },
   "keywords": [],
@@ -28,6 +28,7 @@
     "@tradle/models-onfido": "github:tradle/models-onfido",
     "@tradle/models-products-bot": "github:tradle/models-products-bot",
     "@types/node": "^8.0.51",
+    "husky": "^0.14.3",
     "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
     "tape": "^4.8.0",
