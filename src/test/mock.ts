@@ -34,10 +34,11 @@ export default {
   request: mockRequest
 }
 
-function mockClient (opts={}) {
+function mockClient ({ products, ...rest }) {
   const onfidoAPI = mockAPI()
   const bot = mockBot()
   const plugin = createPlugin({
+    formsToRequestCorrectionsFor: ['tradle.onfido.Applicant', 'tradle.Selfie'],
     logger: new ConsoleLogger(),
     bot,
     onfidoAPI,
@@ -52,9 +53,13 @@ function mockClient (opts={}) {
         getLatestFormByType: (forms, type) => {
           return forms.slice().reverse().find(({ id }) => parseStub(id).type === type)
         }
+      },
+      requestEdit: async () => {
+        throw new Error('mock me')
       }
     },
-    ...opts
+    products,
+    ...rest
   })
 
   plugin.conf.put(DEFAULT_WEBHOOK_KEY, { token: 'testtoken' })

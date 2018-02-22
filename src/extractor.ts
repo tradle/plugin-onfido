@@ -1,7 +1,7 @@
 import _ = require('lodash')
 import Debug = require('debug')
 import { TYPE } from '@tradle/constants'
-import ONFIDO_PROP_INFO from './onfido-props'
+import PROP_MAP from './onfido-tradle-mapping'
 import {
   NAME,
   APPLICANT,
@@ -19,40 +19,30 @@ import {
 
 const packageName = require('../package.json').name
 const debug = Debug(packageName + ':extractor')
-const ADDRESS_PROPS = ['building_number', 'street', 'town', 'postcode']
+const ADDRESS_PROPS = ['building_number', 'street', 'town', 'postcode', 'country']
+const NAME_PROPS = ['first_name', 'last_name']
 
-const toOnfidoName = name => {
-  const first_name = name.firstName || name.givenName
-  const last_name = name.lastName || name.surname
-  if (first_name && last_name) {
-    return { first_name, last_name }
+const createSubsetGetter = subset => form => {
+  let mapping = PROP_MAP[form[TYPE]]
+  if (!mapping) return
+
+  mapping = _.pick(mapping, subset)
+  let mapped
+  try {
+    mapped = _.transform(mapping, (result, pMapping, onfidoProp) => {
+      const { tradle, transform = _.identity } = pMapping
+      const val = transform(form[tradle])
+      if (val != null) result[onfidoProp] = val
+    }, {})
+  } catch (err) {
+    debug(`failed to extract props: ${subset.join(', ')}`, err)
   }
+
+  return _.size(mapped) ? mapped : undefined
 }
 
-const getAddress = (form:any):OnfidoAddress => {
-  const countryCode = getCountryCode(form.country)
-  if (!countryCode) {
-    debug(`ignoring address with country "${form.country.title}", don't know country 3-letter country code`)
-    return
-  }
-
-  const address = {
-    country: countryCode
-  } as OnfidoAddress
-
-  ADDRESS_PROPS.forEach(prop => {
-    const propInfo = ONFIDO_PROP_INFO[prop]
-    if (typeof propInfo !== 'undefined') {
-      address[prop] = form[propInfo.tradle]
-    }
-  })
-
-  if (form.subStreet) address.sub_street = form.subStreet
-  if (form.flatNumber) address.flat_number = form.flatNumber
-
-  return address
-}
-
+const toOnfidoName = createSubsetGetter(NAME_PROPS)
+const getAddress:(form:any) => OnfidoAddress|void = createSubsetGetter(ADDRESS_PROPS)
 const getDateOfBirth = (form:any):string|void => {
   let date
   const type = form[TYPE]
@@ -71,15 +61,6 @@ const getDateOfBirth = (form:any):string|void => {
 
   if (date) {
     return normalizeDate(date)
-  }
-}
-
-const getCountryCode = (country) => {
-  switch (country.title.trim().toLowerCase()) {
-    case 'united kingdom':
-      return 'GBR'
-    case 'new zealand':
-      return 'NZL'
   }
 }
 

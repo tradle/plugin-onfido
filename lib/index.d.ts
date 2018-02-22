@@ -1,3 +1,4 @@
 import Onfido from './plugin';
-declare const createPlugin: (opts: any) => Onfido;
+import { PluginOpts } from './types';
+declare const createPlugin: (opts: PluginOpts) => Onfido;
 export { createPlugin, Onfido };

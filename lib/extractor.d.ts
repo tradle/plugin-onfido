@@ -2,22 +2,13 @@ import { NAME, APPLICANT, ADDRESS, PG_PERSONAL_DETAILS } from './constants';
 import { OnfidoAddress } from './types';
 export declare const byProp: {
     name: {
-        [NAME]: (name: any) => {
-            first_name: any;
-            last_name: any;
-        };
-        [APPLICANT]: (name: any) => {
-            first_name: any;
-            last_name: any;
-        };
-        [PG_PERSONAL_DETAILS]: (name: any) => {
-            first_name: any;
-            last_name: any;
-        };
+        [NAME]: (form: any) => any;
+        [APPLICANT]: (form: any) => any;
+        [PG_PERSONAL_DETAILS]: (form: any) => any;
     };
     address: {
-        [APPLICANT]: (form: any) => OnfidoAddress;
-        [ADDRESS]: (form: any) => OnfidoAddress;
+        [APPLICANT]: (form: any) => void | OnfidoAddress;
+        [ADDRESS]: (form: any) => void | OnfidoAddress;
     };
     dob: {
         [APPLICANT]: (form: any) => string | void;

@@ -1,6 +1,7 @@
 import Onfido from './plugin'
+import { PluginOpts } from './types'
 
-const createPlugin = opts => new Onfido(opts)
+const createPlugin = (opts:PluginOpts) => new Onfido(opts)
 
 export {
   createPlugin,

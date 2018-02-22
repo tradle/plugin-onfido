@@ -173,6 +173,17 @@ test('common case', loudAsync(async (t) => {
       ]
     })
 
+    // const err = _.extend(new Error('test error'), {
+    //   status: 422,
+    //   body: {
+    //     type: 'validation_error',
+    //     fields: {
+    //       "addresses": [{ "postcode": "Invalid postcode" }]
+    //     }
+    //   }
+    // })
+
+    // return Promise.reject(err)
     return Promise.resolve(fixtures.applicants[0])
   })
 
@@ -227,6 +238,23 @@ test('common case', loudAsync(async (t) => {
   application.forms = [
     formStubs.applicant
   ]
+
+  sinon.stub(onfido.productsAPI, 'requestEdit').callsFake(async ({ item, details }) => {
+    t.equal(details.errors[0].name, 'postcode')
+  })
+
+  await onfido.handleOnfidoError({
+    req: { state, application },
+    error: _.extend(new Error('test error'), {
+      status: 422,
+      body: {
+        type: 'validation_error',
+        fields: {
+          "addresses": [{ "postcode": "Invalid postcode" }]
+        }
+      }
+    })
+  })
 
   t.equal(await onfido.applicants.createOrUpdate({
     state,

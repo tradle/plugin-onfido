@@ -30,7 +30,8 @@ import {
 } from './constants'
 
 import Errors from './errors'
-import ONFIDO_PROP_INFO from './onfido-props'
+import ONFIDO_ERR_MESSAGES from './onfido-error-messages'
+import ONFIDO_MAPPING from './onfido-tradle-mapping'
 
 import {
   getSelfie,
@@ -79,7 +80,7 @@ export default class Onfido implements IOnfidoComponent {
       products,
       productsAPI,
       padApplicantName,
-      formsToRequestCorrectionsFor,
+      formsToRequestCorrectionsFor=[],
       preCheckAddress,
       webhookKey=DEFAULT_WEBHOOK_KEY
       // onFinished
@@ -215,27 +216,28 @@ export default class Onfido implements IOnfidoComponent {
         onfidoProp = firstProp(fields[onfidoProp][0])
       }
 
-      propInfo = ONFIDO_PROP_INFO[onfidoProp]
+      propInfo = ONFIDO_ERR_MESSAGES[onfidoProp]
       if (propInfo) break
     }
 
     if (!propInfo) throw error
 
-    const tradleProp = propInfo.tradle
-    const formType = propInfo.form
+    const { user, application } = req
+    const form = application.forms.slice().reverse().map(parseStub).find(({ type }) => {
+      const mapping = ONFIDO_MAPPING[type]
+      return mapping && mapping[onfidoProp]
+    })
+
+    if (!form) return
+
+    const formType = form.type
     if (!this.formsToRequestCorrectionsFor.includes(formType)) {
       this.logger.info(`not configured to request edits for ${formType}`)
       // call this application "submitted"
       return true
     }
 
-    const { user, application } = req
-    const form = this.productsAPI.state.getLatestFormByType(application.forms, formType)
-    if (!form) {
-      this.logger.error(`failed to find form for property: ${onfidoProp}`)
-      throw error
-    }
-
+    const tradleProp = ONFIDO_MAPPING[formType][onfidoProp].tradle
     const message = propInfo.error || Errors.INVALID_VALUE
     if (formType === SELFIE) {
       await this.productsAPI.requestItem({
