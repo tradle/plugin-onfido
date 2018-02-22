@@ -1,4 +1,5 @@
 import crypto = require('crypto')
+import _ = require('lodash')
 import { TYPE } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
@@ -84,21 +85,8 @@ export const getFormsToCreateApplicant = ({ forms, reports }) => {
   })
 
   if (required.every(result => result)) {
-    return unique(required)
+    return _.uniqBy(required, ({ type }) => type)
   }
-}
-
-export const unique = arr => {
-  const map = new Map()
-  const uniq = []
-  for (const item of arr) {
-    if (!map.has(item)) {
-      map.set(item, true)
-      uniq.push(item)
-    }
-  }
-
-  return uniq
 }
 
 export const isApplicantInfoForm = type => Extractor.hasForm(type)

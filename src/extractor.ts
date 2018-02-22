@@ -55,7 +55,8 @@ const getAddress = (form:any):OnfidoAddress => {
 
 const getDateOfBirth = (form:any):string|void => {
   let date
-  if (form[TYPE] === APPLICANT) {
+  const type = form[TYPE]
+  if (type === APPLICANT || type === PG_PERSONAL_DETAILS) {
     date = form.dateOfBirth
   }
 
@@ -85,7 +86,8 @@ const getCountryCode = (country) => {
 export const byProp = {
   name: {
     [NAME]: toOnfidoName,
-    [APPLICANT]: toOnfidoName
+    [APPLICANT]: toOnfidoName,
+    [PG_PERSONAL_DETAILS]: toOnfidoName
   },
   address: {
     [APPLICANT]: getAddress,

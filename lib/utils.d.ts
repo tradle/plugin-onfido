@@ -19,8 +19,7 @@ export declare const getOnfidoCheckIdKey: (checkId: any) => string;
 export declare const getFormsToCreateApplicant: ({ forms, reports }: {
     forms: any;
     reports: any;
-}) => any[];
-export declare const unique: (arr: any) => any[];
+}) => any;
 export declare const isApplicantInfoForm: (type: any) => boolean;
 export declare const getApplicantProps: (forms: any) => ApplicantProps;
 export declare const normalizeDate: (date: any) => string;

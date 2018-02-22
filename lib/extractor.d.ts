@@ -10,6 +10,10 @@ export declare const byProp: {
             first_name: any;
             last_name: any;
         };
+        [PG_PERSONAL_DETAILS]: (name: any) => {
+            first_name: any;
+            last_name: any;
+        };
     };
     address: {
         [APPLICANT]: (form: any) => OnfidoAddress;

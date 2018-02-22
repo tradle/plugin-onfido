@@ -74,11 +74,12 @@ export default class Applicants implements IOnfidoComponent {
     const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item, req)))
     const props = getApplicantProps(forms)
     const { first_name, last_name, dob, addresses=[] } = props
-    if (!(first_name && last_name && dob && addresses.length)) {
+    const needAddress = productOptions.reports.includes('identity')
+    if (!(first_name && last_name && dob && (addresses.length || !needAddress))) {
       return false
     }
 
-    if (this.preCheckAddress) {
+    if (addresses.length && this.preCheckAddress) {
       await this.apiUtils.checkAddress({ address: addresses[0] })
     }
 
