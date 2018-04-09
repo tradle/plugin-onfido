@@ -1,13 +1,13 @@
 import { ILogger } from './types';
 import { Onfido } from './';
 export default class APIUtils {
-    productsAPI: any;
+    applications: any;
     onfidoAPI: any;
     bot: any;
     logger: ILogger;
     private db;
     private models;
-    constructor({logger, bot, onfidoAPI, productsAPI, models}: Onfido);
+    constructor({logger, bot, onfidoAPI, applications, models}: Onfido);
     getResource: (resource: any, req?: any) => Promise<any>;
     getUser: (permalink: string, req?: any) => Promise<any>;
     checkAddress: ({ address }: {

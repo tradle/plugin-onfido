@@ -42,17 +42,9 @@ function mockClient ({ products, ...rest }) {
     logger: new ConsoleLogger(),
     bot,
     onfidoAPI,
-    productsAPI: {
-      importVerification: (verification) => {
+    applications: {
+      createVerification: ({ application, verification }) => {
         throw new Error('mock me')
-      },
-      saveNewVersionOfApplication: async ({ application }) => {
-        return await bot.versionAndSave(application)
-      },
-      state: {
-        getLatestFormByType: (forms, type) => {
-          return forms.slice().reverse().find(({ id }) => parseStub(id).type === type)
-        }
       },
       requestEdit: async () => {
         throw new Error('mock me')

@@ -67,7 +67,7 @@ const setup = () => {
     requestFor: TEST_PRODUCT.id,
     forms: [
       formStubs.name
-    ]
+    ].map(toAppSub)
   }
 
   addLinks(application)
@@ -188,7 +188,7 @@ test('common case', loudAsync(async (t) => {
   })
 
   let vIdx = 0
-  const importVerificationStub = sinon.stub(onfido.productsAPI, 'importVerification')
+  const importVerificationStub = sinon.stub(onfido.applications, 'createVerification')
     .callsFake(async ({ verification }) => {
       verification = _.omit(verification, SIG)
       if (vIdx === 0) {
@@ -218,7 +218,7 @@ test('common case', loudAsync(async (t) => {
   application.forms = [
     formStubs.name,
     formStubs.driving_license
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.createOrUpdate({
     state,
@@ -228,7 +228,7 @@ test('common case', loudAsync(async (t) => {
   application.forms = [
     formStubs.name,
     formStubs.passport
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.createOrUpdate({
     state,
@@ -237,9 +237,9 @@ test('common case', loudAsync(async (t) => {
 
   application.forms = [
     formStubs.applicant
-  ]
+  ].map(toAppSub)
 
-  sinon.stub(onfido.productsAPI, 'requestEdit').callsFake(async ({ item, details }) => {
+  sinon.stub(onfido.applications, 'requestEdit').callsFake(async ({ item, details }) => {
     t.equal(details.errors[0].name, 'postcode')
   })
 
@@ -267,7 +267,7 @@ test('common case', loudAsync(async (t) => {
     formStubs.applicant,
     formStubs.selfie,
     formStubs.driving_license
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.uploadSelfie({
     state,
@@ -343,7 +343,7 @@ test('common case', loudAsync(async (t) => {
   t.end()
 }))
 
-test('plugin methods', loudAsync(async (t) => {
+test.only('plugin methods', loudAsync(async (t) => {
   const {
     onfido,
     // state,
@@ -406,7 +406,7 @@ test('plugin methods', loudAsync(async (t) => {
 
   const receive = async (payload) => {
     await onfido['onmessage:tradle.Form']({ payload, application })
-    application.forms.push(toStub(payload))
+    application.forms.push(toAppSub(payload))
     await onfido.bot.save(application)
   }
 
@@ -611,5 +611,11 @@ function loudAsync (asyncFn) {
       console.error(err)
       throw err
     }
+  }
+}
+
+function toAppSub (submission) {
+  return {
+    submission: submission[TYPE] ? toStub(submission) : submission
   }
 }

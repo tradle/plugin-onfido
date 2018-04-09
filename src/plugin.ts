@@ -44,7 +44,8 @@ import {
   getLatestFormByType,
   isApplicantInfoForm,
   addLinks,
-  validateProductOptions
+  validateProductOptions,
+  getFormStubs
 } from './utils'
 
 // const REQUEST_EDITS_FOR = {
@@ -65,7 +66,7 @@ export default class Onfido implements IOnfidoComponent {
   public webhookKey:string
   public logger:ILogger
   public onfidoAPI: any
-  public productsAPI:any
+  public applications: any
   public apiUtils: APIUtils
   public conf: any
   public get models() {
@@ -78,7 +79,7 @@ export default class Onfido implements IOnfidoComponent {
       onfidoAPI,
       bot,
       products,
-      productsAPI,
+      applications,
       padApplicantName,
       formsToRequestCorrectionsFor=[],
       preCheckAddress,
@@ -88,6 +89,7 @@ export default class Onfido implements IOnfidoComponent {
 
     this.logger = logger
     this.onfidoAPI = onfidoAPI
+    this.applications = applications
 
     products.forEach(validateProductOptions)
     this.products = products.map(opts => {
@@ -97,7 +99,6 @@ export default class Onfido implements IOnfidoComponent {
       }
     })
 
-    this.productsAPI = productsAPI
     this.bot = bot
     this.conf = this.bot.conf.sub('onfido')
     this.padApplicantName = padApplicantName
@@ -223,10 +224,12 @@ export default class Onfido implements IOnfidoComponent {
     if (!propInfo) throw error
 
     const { user, application } = req
-    const form = application.forms.slice().reverse().map(parseStub).find(({ type }) => {
-      const mapping = ONFIDO_MAPPING[type]
-      return mapping && mapping[onfidoProp]
-    })
+    const form = getFormStubs(application)
+      .reverse()
+      .find(({ type }) => {
+        const mapping = ONFIDO_MAPPING[type]
+        return mapping && mapping[onfidoProp]
+      })
 
     if (!form) return
 
@@ -240,7 +243,7 @@ export default class Onfido implements IOnfidoComponent {
     const tradleProp = ONFIDO_MAPPING[formType][onfidoProp].tradle
     const message = propInfo.error || Errors.INVALID_VALUE
     if (formType === SELFIE) {
-      await this.productsAPI.requestItem({
+      await this.applications.requestItem({
         req,
         user,
         application,
@@ -253,7 +256,7 @@ export default class Onfido implements IOnfidoComponent {
 
     const prefill = _.omit(await this.apiUtils.getResource(form, req), SIG)
     this.logger.debug(`requesting edit of ${formType}`)
-    await this.productsAPI.requestEdit({
+    await this.applications.requestEdit({
       req,
       item: prefill,
       details: {

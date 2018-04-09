@@ -5,7 +5,7 @@ import { Onfido } from './';
 export default class Applicants implements IOnfidoComponent {
     bot: any;
     onfidoAPI: any;
-    productsAPI: any;
+    applications: any;
     logger: ILogger;
     apiUtils: APIUtils;
     padApplicantName: boolean;

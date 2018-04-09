@@ -47,3 +47,4 @@ export declare const addLinks: (resource: any) => void;
 export declare const batchify: (arr: any, batchSize: any) => any[];
 export declare const stubFromParsedStub: (parsedStub: any) => any;
 export declare const validateProductOptions: (opts: ProductOptions) => void;
+export declare const getFormStubs: (application: any) => any;

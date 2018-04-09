@@ -46,13 +46,13 @@ const REPORT_TYPE_TO_ONFIDO_NAME = {
 // }
 
 export default class Checks implements IOnfidoComponent {
-  public productsAPI: any
+  public applications: any
   public bot: any
   public onfidoAPI: any
   public logger: ILogger
   public apiUtils: APIUtils
   constructor (main:Onfido) {
-    this.productsAPI = main.productsAPI
+    this.applications = main.applications
     this.bot = main.bot
     this.onfidoAPI = main.onfidoAPI
     this.logger = main.logger
@@ -181,15 +181,10 @@ export default class Checks implements IOnfidoComponent {
     })
 
     if (reports.length) {
-      let willAutoSave = !!req
       const appCopy = _.cloneDeep(application)
       await Promise.all(reports.map(report => {
         return this.processReport({ req, application, state, check: current, report })
       }))
-
-      if (!willAutoSave && !_.isEqual(application, appCopy)) {
-        await this.productsAPI.saveNewVersionOfApplication({ application })
-      }
     }
 
     current.rawData = sanitize(current.rawData).sanitized
@@ -240,7 +235,6 @@ export default class Checks implements IOnfidoComponent {
     report = sanitize(report).sanitized
     if (report.result !== 'clear') return
 
-    const userPromise = this.apiUtils.getUser(applicantPermalink, req)
     await Promise.all(stubs.map(async (stub) => {
       this.logger.debug('creating verification for', {
         applicant: applicantPermalink,
@@ -253,15 +247,11 @@ export default class Checks implements IOnfidoComponent {
         form: await this.apiUtils.getResource(stub, req)
       })
 
-      const signed = await this.bot.sign(verification)
-      addLinks(signed)
-      this.productsAPI.importVerification({
-        user: await userPromise,
+      return await this.applications.createVerification({
+        req,
         application,
-        verification: signed
+        verification
       })
-
-      await this.bot.save(signed)
     }))
   }
 

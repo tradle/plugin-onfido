@@ -29,16 +29,7 @@ export const getLatestFormByType = (application:any, type:string) => {
 }
 
 export const getLatestForm = (application:any, filter:Function) => {
-  let result
-  application.forms.slice().sort(sortDescendingByDate).some(stub => {
-    const parsed = parseStub(stub)
-    if (filter(parsed)) {
-      result = parsed
-      return true
-    }
-  })
-
-  return result
+  return getFormStubs(application).find(parsed => filter(parsed))
 }
 
 export const parseStub = validateResource.utils.parseStub
@@ -292,3 +283,6 @@ export const validateProductOptions = (opts:ProductOptions):void => {
     throw new Error(`report "${bad}" is invalid. Supported reports are: ${REPORTS.join(', ')}`)
   }
 }
+
+export const getFormStubs = application => (application.forms || [])
+  .map(appSub => parseStub(appSub.submission))
