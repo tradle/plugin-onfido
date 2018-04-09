@@ -12,9 +12,11 @@ import fakeResource = require('@tradle/build-resource/fake')
 import mock from './mock'
 import fixtures from './fixtures'
 import models from '../models'
-import { getEnumValueId, getLatestFormByType, addLinks, parseCheckURL } from '../utils'
+import { getEnumValueId, getLatestFormByType, addLinks, parseCheckURL, parseStub, stubFromParsedStub } from '../utils'
 import onfidoModels from '../onfido-models'
 import { APPLICATION, APPLICANT, REPORTS } from '../constants'
+
+const fixStub = stubFromParsedStub
 
 type Forms = {
   name?: any
@@ -67,7 +69,7 @@ const setup = () => {
     requestFor: TEST_PRODUCT.id,
     forms: [
       formStubs.name
-    ]
+    ].map(toAppSub)
   }
 
   addLinks(application)
@@ -188,7 +190,7 @@ test('common case', loudAsync(async (t) => {
   })
 
   let vIdx = 0
-  const importVerificationStub = sinon.stub(onfido.productsAPI, 'importVerification')
+  const importVerificationStub = sinon.stub(onfido.applications, 'createVerification')
     .callsFake(async ({ verification }) => {
       verification = _.omit(verification, SIG)
       if (vIdx === 0) {
@@ -218,7 +220,7 @@ test('common case', loudAsync(async (t) => {
   application.forms = [
     formStubs.name,
     formStubs.driving_license
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.createOrUpdate({
     state,
@@ -228,7 +230,7 @@ test('common case', loudAsync(async (t) => {
   application.forms = [
     formStubs.name,
     formStubs.passport
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.createOrUpdate({
     state,
@@ -237,9 +239,9 @@ test('common case', loudAsync(async (t) => {
 
   application.forms = [
     formStubs.applicant
-  ]
+  ].map(toAppSub)
 
-  sinon.stub(onfido.productsAPI, 'requestEdit').callsFake(async ({ item, details }) => {
+  sinon.stub(onfido.applications, 'requestEdit').callsFake(async ({ item, details }) => {
     t.equal(details.errors[0].name, 'postcode')
   })
 
@@ -267,7 +269,7 @@ test('common case', loudAsync(async (t) => {
     formStubs.applicant,
     formStubs.selfie,
     formStubs.driving_license
-  ]
+  ].map(toAppSub)
 
   t.equal(await onfido.applicants.uploadSelfie({
     state,
@@ -288,7 +290,7 @@ test('common case', loudAsync(async (t) => {
   await onfido.createCheck({ application, state, saveState: true })
   t.equal(state.result, undefined)
   t.ok(state.check)
-  t.same(state.checkStatus, { id: 'tradle.onfido.CheckStatus_inprogress', title: 'In progress' })
+  t.same(state.checkStatus, fixStub({ id: 'tradle.onfido.CheckStatus_inprogress', title: 'In progress' }))
 
   let reportIdx = 0
   sinon.stub(onfido.onfidoAPI.webhooks, 'handleEvent').callsFake(async (req, token) => {
@@ -343,7 +345,7 @@ test('common case', loudAsync(async (t) => {
   t.end()
 }))
 
-test('plugin methods', loudAsync(async (t) => {
+test.only('plugin methods', loudAsync(async (t) => {
   const {
     onfido,
     // state,
@@ -406,7 +408,7 @@ test('plugin methods', loudAsync(async (t) => {
 
   const receive = async (payload) => {
     await onfido['onmessage:tradle.Form']({ payload, application })
-    application.forms.push(toStub(payload))
+    application.forms.push(toAppSub(payload))
     await onfido.bot.save(application)
   }
 
@@ -595,9 +597,7 @@ function newApplicantInfo () {
   })
 
   return {
-    user: {
-      id: buildResource.permalink(identity)
-    },
+    user: buildResource.stub({ resource: identity }),
     identity,
     stub
   }
@@ -611,5 +611,11 @@ function loudAsync (asyncFn) {
       console.error(err)
       throw err
     }
+  }
+}
+
+function toAppSub (submission) {
+  return {
+    submission: submission[TYPE] ? toStub(submission) : submission
   }
 }

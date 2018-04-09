@@ -17,7 +17,8 @@ import {
   digest,
   ensureNoPendingCheck,
   sanitize,
-  stubFromParsedStub
+  stubFromParsedStub,
+  getFormStubs
 } from './utils'
 
 import APIUtils from './api-utils'
@@ -36,7 +37,7 @@ import {
 export default class Applicants implements IOnfidoComponent {
   public bot: any
   public onfidoAPI: any
-  public productsAPI: any
+  public applications: any
   public logger: ILogger
   public apiUtils: APIUtils
   public padApplicantName: boolean
@@ -46,7 +47,7 @@ export default class Applicants implements IOnfidoComponent {
     this.main = main
     this.bot = main.bot
     this.onfidoAPI = main.onfidoAPI
-    this.productsAPI = main.productsAPI
+    this.applications = main.applications
     this.logger = main.logger
     this.apiUtils = main.apiUtils
     this.padApplicantName = main.padApplicantName
@@ -61,7 +62,7 @@ export default class Applicants implements IOnfidoComponent {
     const productOptions = this.main.getProductOptions(application.requestFor)
     const fStub = form && this.apiUtils.stub(form)
     const parsedStubs = getFormsToCreateApplicant({
-      forms: application.forms.concat(fStub || []),
+      forms: getFormStubs(application).concat(fStub ? parseStub(fStub) : []),
       reports: productOptions.reports
     })
 

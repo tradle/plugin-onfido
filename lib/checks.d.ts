@@ -2,7 +2,7 @@ import { Onfido } from './';
 import APIUtils from './api-utils';
 import { IOnfidoComponent, ILogger, CheckMapping } from './types';
 export default class Checks implements IOnfidoComponent {
-    productsAPI: any;
+    applications: any;
     bot: any;
     onfidoAPI: any;
     logger: ILogger;

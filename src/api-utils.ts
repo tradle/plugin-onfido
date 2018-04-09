@@ -5,16 +5,16 @@ import { ILogger } from './types'
 import { Onfido } from './'
 
 export default class APIUtils {
-  public productsAPI: any
+  public applications: any
   public onfidoAPI: any
   public bot: any
   public logger: ILogger
   private db: any
   private models: any
-  constructor ({ logger, bot, onfidoAPI, productsAPI, models }: Onfido) {
+  constructor ({ logger, bot, onfidoAPI, applications, models }: Onfido) {
     this.logger = logger
     this.onfidoAPI = onfidoAPI
-    this.productsAPI = productsAPI
+    this.applications = applications
     this.bot = bot
     this.db = bot.db
     this.models = models

@@ -13,7 +13,7 @@ export default class Onfido implements IOnfidoComponent {
     webhookKey: string;
     logger: ILogger;
     onfidoAPI: any;
-    productsAPI: any;
+    applications: any;
     apiUtils: APIUtils;
     conf: any;
     readonly models: any;

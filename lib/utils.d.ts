@@ -45,5 +45,6 @@ export declare const createOnfidoVerification: ({ applicant, form, report }: {
 export declare const isComplete: (onfidoObject: any) => boolean;
 export declare const addLinks: (resource: any) => void;
 export declare const batchify: (arr: any, batchSize: any) => any[];
-export declare const stubFromParsedStub: (parsedStub: any) => any;
+export declare const stubFromParsedStub: (stub: any) => any;
 export declare const validateProductOptions: (opts: ProductOptions) => void;
+export declare const getFormStubs: (application: any) => any;

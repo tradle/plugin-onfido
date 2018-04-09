@@ -29,16 +29,7 @@ export const getLatestFormByType = (application:any, type:string) => {
 }
 
 export const getLatestForm = (application:any, filter:Function) => {
-  let result
-  application.forms.slice().sort(sortDescendingByDate).some(stub => {
-    const parsed = parseStub(stub)
-    if (filter(parsed)) {
-      result = parsed
-      return true
-    }
-  })
-
-  return result
+  return getFormStubs(application).find(parsed => filter(parsed))
 }
 
 export const parseStub = validateResource.utils.parseStub
@@ -271,14 +262,17 @@ export const batchify = (arr, batchSize) => {
   return batches
 }
 
-export const stubFromParsedStub = (parsedStub) => {
-  const id = buildResource.id(parsedStub)
-  const stub:any = { id }
-  if (parsedStub.title) {
-    stub.title = parsedStub.title
+export const stubFromParsedStub = stub => {
+  const { type, link, permalink, title } = parseStub(stub)
+  const fixed:any = {
+    [TYPE]: type,
+    _link: link,
+    _permalink: permalink
   }
 
-  return stub
+  if (title) fixed._displayName = title
+
+  return fixed
 }
 
 export const validateProductOptions = (opts:ProductOptions):void => {
@@ -292,3 +286,6 @@ export const validateProductOptions = (opts:ProductOptions):void => {
     throw new Error(`report "${bad}" is invalid. Supported reports are: ${REPORTS.join(', ')}`)
   }
 }
+
+export const getFormStubs = application => (application.forms || [])
+  .map(appSub => parseStub(appSub.submission))

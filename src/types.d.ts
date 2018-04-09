@@ -66,7 +66,7 @@ export type PluginOpts = {
   logger: ILogger
   bot: any
   onfidoAPI: any
-  productsAPI: any
+  applications: any
   products: ProductOptions[]
   formsToRequestCorrectionsFor: string[]
   // onFinished: Function
@@ -78,7 +78,7 @@ export type PluginOpts = {
 export interface IOnfidoComponent {
   logger: ILogger
   onfidoAPI:any
-  productsAPI:any
+  applications:any
   apiUtils: APIUtils
   models?: any
 }
