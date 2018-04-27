@@ -149,7 +149,6 @@ export default class Applicants implements IOnfidoComponent {
         filename: `live-photo-${digest(data)}.${getExtension(mimeType)}`
       })
 
-      this.logger.debug('uploaded selfie')
       this.apiUtils.setProps(state, { selfie: form })
       return true
     } catch (error) {

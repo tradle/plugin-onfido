@@ -51,9 +51,10 @@ export type Photo = {
 
 export interface ILogger {
   log: Function
+  silly: Function
+  debug: Function
   info: Function
   warn: Function
-  debug: Function
   error: Function
 }
 
