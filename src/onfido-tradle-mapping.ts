@@ -4,7 +4,8 @@ import {
   SELFIE,
   PHOTO_ID,
   EMAIL_ADDRESS,
-  NAME
+  NAME,
+  PG_PERSONAL_DETAILS
 } from './constants'
 
 const getCountryCode = (country) => {
@@ -23,6 +24,18 @@ const countryTransform = country => {
   }
 
   return countryCode
+}
+
+const pgPersonalDetailsMapping = {
+  first_name: {
+    tradle: 'firstName',
+  },
+  last_name: {
+    tradle: 'lastName'
+  },
+  dob: {
+    tradle: 'dateOfBirth'
+  }
 }
 
 const nameFormMapping = {
@@ -91,7 +104,8 @@ const byForm = {
   [APPLICANT]: applicantFormMapping,
   [SELFIE]: selfieFormProps,
   [PHOTO_ID]: photoIdFormProps,
-  [EMAIL_ADDRESS]: emailFormProps
+  [EMAIL_ADDRESS]: emailFormProps,
+  [PG_PERSONAL_DETAILS]: pgPersonalDetailsMapping
 }
 
 export default byForm

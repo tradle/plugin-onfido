@@ -133,7 +133,10 @@ export default class Onfido implements IOnfidoComponent {
       return
     }
 
-    const check = this.bot.draft(onfidoModels.check.id)
+    const check = this.bot.draft({
+      type: onfidoModels.check.id
+    })
+
     const nonPending = checks.find(utils.isVirginCheck)
     if (nonPending) {
       check.set(nonPending)

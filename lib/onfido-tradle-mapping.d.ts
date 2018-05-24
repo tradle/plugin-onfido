@@ -1,4 +1,4 @@
-import { APPLICANT, SELFIE, PHOTO_ID, EMAIL_ADDRESS, NAME } from './constants';
+import { APPLICANT, SELFIE, PHOTO_ID, EMAIL_ADDRESS, NAME, PG_PERSONAL_DETAILS } from './constants';
 declare const byForm: {
     [NAME]: {
         first_name: {
@@ -53,6 +53,17 @@ declare const byForm: {
     };
     [EMAIL_ADDRESS]: {
         email: {
+            tradle: string;
+        };
+    };
+    [PG_PERSONAL_DETAILS]: {
+        first_name: {
+            tradle: string;
+        };
+        last_name: {
+            tradle: string;
+        };
+        dob: {
             tradle: string;
         };
     };

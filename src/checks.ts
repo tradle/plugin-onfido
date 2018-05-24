@@ -252,8 +252,7 @@ export default class Checks implements IOnfidoComponent {
       }
     })
 
-    return this.bot.draft(onfidoModels.check.id)
-      .set(check)
+    return this.bot.draft({ resource: check })
   }
 
   public listWithApplication = async (permalink):Promise<Check[]> => {

@@ -25,7 +25,7 @@
     "@tradle/engine": "^6.0.0",
     "@tradle/models": "github:tradle/models",
     "@tradle/models-nz": "github:tradle/models-nz",
-    "@tradle/models-onfido": "github:tradle/models-onfido",
+    "@tradle/models-onfido": "github:tradle/models-onfido#dev",
     "@tradle/models-products-bot": "github:tradle/models-products-bot",
     "@types/node": "^8.0.51",
     "husky": "^0.14.3",

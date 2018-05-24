@@ -84,8 +84,8 @@ const setup = () => {
   const completedCheck = _.cloneDeep(fixtures.checks.complete)
   const pendingCheck = _.cloneDeep(fixtures.checks.pending)
 
-  const check:Resource = onfido.bot.draft(onfidoModels.check.id)
-    .set({
+  const check: Resource = onfido.bot.draft({
+    resource: {
       [TYPE]: onfidoModels.check.id,
       [SIG]: mock.sig(),
       applicant: applicantInfo.stub,
@@ -93,7 +93,8 @@ const setup = () => {
         models,
         resource: application
       })
-    })
+    }
+  })
 
   return {
     onfido,

@@ -136,8 +136,9 @@ function mockBot () {
     db[getKey(resource)] = resource
   }
 
-  const draft = type => wrapResource({
-    [TYPE]: type
+  const draft = ({ type, resource={} }) => wrapResource({
+    [TYPE]: resource[TYPE] || type,
+    ...resource
   }, bot)
 
   const dbMock = {
