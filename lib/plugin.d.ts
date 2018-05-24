@@ -21,19 +21,16 @@ export default class Onfido implements IOnfidoComponent {
     ['onmessage:tradle.Form']: (req: any) => Promise<any>;
     private ensureProductSupported;
     getProductOptions: (productModelId: string) => ProductOptions;
-    private putStatePointer;
-    private getStatePointer;
     handleOnfidoError: ({ req, error }: {
         req: any;
         error: any;
     }) => Promise<boolean>;
-    createCheck: ({ req, application, state, saveState, reports }: {
+    createCheck: ({ req, application, check, reports }: {
         req?: any;
         reports?: string[];
         application: any;
-        state: any;
-        saveState: boolean;
-    }) => Promise<any>;
+        check: any;
+    }) => Promise<void>;
     unregisterWebhook: ({ url }: {
         url: any;
     }) => Promise<void>;
@@ -49,10 +46,8 @@ export default class Onfido implements IOnfidoComponent {
     }) => Promise<void>;
     private handleForm;
     private _handleForm;
-    updateApplicant: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
-    uploadAttachments: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
-    getState: (permalink: string) => Promise<any>;
-    listStates: (opts: any) => Promise<any>;
+    updateApplicant: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
+    uploadAttachments: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
     sync: () => Promise<void>;
     private getForm;
 }

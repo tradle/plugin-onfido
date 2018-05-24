@@ -1,6 +1,6 @@
 import { TYPE } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
-import { equalish, parseStub } from './utils'
+import { equalish, parseStub, sanitize } from './utils'
 import { ILogger } from './types'
 import { Onfido } from './'
 
@@ -106,4 +106,6 @@ export default class APIUtils {
   public isTestMode () {
     return this.onfidoAPI.mode === 'test'
   }
+
+  public sanitize = obj => sanitize(obj).sanitized
 }

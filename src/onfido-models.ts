@@ -4,8 +4,8 @@ const checkStatus = onfidoModels['tradle.onfido.CheckStatus']
 const reportStatus = onfidoModels['tradle.onfido.ReportStatus']
 const reportType = onfidoModels['tradle.onfido.ReportType']
 const check = onfidoModels['tradle.onfido.Check']
-const state = onfidoModels['tradle.onfido.ApplicationState']
-const stateStub = onfidoModels['tradle.onfido.ApplicationStateStub']
+// const state = onfidoModels['tradle.onfido.ApplicationState']
+// const stateStub = onfidoModels['tradle.onfido.ApplicationStateStub']
 
 const models = {
   opResult,
@@ -13,8 +13,8 @@ const models = {
   reportStatus,
   reportType,
   check,
-  state,
-  stateStub,
+  // state,
+  // stateStub,
   all: {}
 }
 

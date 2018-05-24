@@ -31,7 +31,9 @@ export declare const getExtension: (mimeType: any) => any;
 export declare const digest: (data: any) => string;
 export declare const hasTwoSides: (onfidoType: any) => boolean;
 export declare const pickNonNull: (obj: any) => {};
-export declare const ensureNoPendingCheck: (state: any) => void;
+export declare const isVirginCheck: (check: any) => boolean;
+export declare const isPendingCheck: (check: any) => boolean;
+export declare const ensureNoPendingCheck: (check: any) => void;
 export declare const getEnumValueId: (value: any) => any;
 export declare const getCompletedReports: ({ current, update }: {
     current: any;
@@ -44,7 +46,6 @@ export declare const createOnfidoVerification: ({ applicant, form, report }: {
 }) => any;
 export declare const isComplete: (onfidoObject: any) => boolean;
 export declare const addLinks: (resource: any) => void;
-export declare const batchify: (arr: any, batchSize: any) => any[];
 export declare const stubFromParsedStub: (stub: any) => any;
 export declare const validateProductOptions: (opts: ProductOptions) => void;
 export declare const getFormStubs: (application: any) => any;

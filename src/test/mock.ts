@@ -1,8 +1,8 @@
 import crypto = require('crypto')
 import { EventEmitter } from 'events'
-// import _ = require('lodash')
+import _ from 'lodash'
 import typeforce = require('typeforce')
-import { TYPE, SIG } from '@tradle/constants'
+import { TYPE, PERMALINK, PREVLINK, SIG, VERSION } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import fakeResource = require('@tradle/build-resource/fake')
 import models from '../models'
@@ -58,12 +58,67 @@ function mockClient ({ products, ...rest }) {
   return plugin
 }
 
+const wrapResource = (resource, bot) => {
+  resource = _.cloneDeep(resource)
+  if (resource[SIG]) addLinks(resource)
+
+  let isModified
+  const wrapper = {
+    get(key) {
+      return resource[key]
+    },
+    set(key, value?) {
+      isModified = true
+
+      if (typeof key === 'string') {
+        resource[key] = value
+      } else {
+        _.extend(resource, key)
+      }
+
+      return this
+    },
+    async sign() {
+      resource[SIG] = newSig()
+      addLinks(resource)
+      return this
+    },
+    async save() {
+      addLinks(resource)
+      isModified = false
+      await bot.save(resource)
+    },
+    async signAndSave() {
+      if (resource[SIG]) {
+        resource[VERSION] = (resource[VERSION] || 0) + 1
+        resource[PERMALINK] = resource._link
+        resource[PERMALINK] = resource._permalink
+      } else {
+        resource[VERSION] = 0
+      }
+
+      await wrapper.sign()
+      await wrapper.save()
+      return this
+    },
+    toJSON(opts) {
+      return _.cloneDeep(resource)
+    },
+    isModified() {
+      return isModified
+    }
+  }
+
+  return wrapper
+}
+
 function mockBot () {
   const db = {}
   const getKey = resource => {
     const type = resource[TYPE]
     const permalink = resource._permalink
     if (!(type && permalink)) {
+      debugger
       throw new Error(`expected ${TYPE} and _permalink`)
     }
 
@@ -81,32 +136,45 @@ function mockBot () {
     db[getKey(resource)] = resource
   }
 
-  const signAndSave = async (resource) => {
-    const signed = await sign(resource)
-    addLinks(signed)
-    await save(signed)
-    return signed
+  const draft = type => wrapResource({
+    [TYPE]: type
+  }, bot)
+
+  const dbMock = {
+    get: async (props) => {
+      const val = db[getKey(props)]
+      if (val) return val
+
+      throw notFoundError(`not found: ${JSON.stringify(props)}`)
+    },
+    find: async ({ filter }) => {
+      const { EQ } = filter
+      const items = []
+      for (let key in db) {
+        let item = db[key]
+        for (let prop in EQ) {
+          if (_.isEqual(_.get(item, prop), EQ[prop])) {
+            items.push(item)
+          }
+        }
+      }
+
+      return { items }
+    },
+    findOne: async (opts) => {
+      const item = (await dbMock.find(opts)).items[0]
+      if (item) return item
+
+      throw notFoundError(`not found: ${JSON.stringify(opts)}`)
+    }
   }
 
-  const version = async (resource) => {
-    buildResource.version(resource)
-    return sign(resource)
-  }
-
-  const versionAndSave = async (resource) => {
-    const ver = await version(resource)
-    await save(ver)
-    return ver
-  }
-
-  return {
+  const bot = {
     models,
     resolveEmbeds: () => {},
+    draft,
     sign,
     save,
-    signAndSave,
-    version,
-    versionAndSave,
     kv: keyValueStore(),
     conf: keyValueStore(),
     users: {
@@ -114,15 +182,10 @@ function mockBot () {
         throw new Error('users.get() not mocked')
       }
     },
-    db: {
-      get: async (props) => {
-        const val = db[getKey(props)]
-        if (val) return val
-
-        throw notFoundError(`not found: ${JSON.stringify(props)}`)
-      }
-    }
+    db: dbMock
   }
+
+  return bot
 }
 
 function mockAPI () {

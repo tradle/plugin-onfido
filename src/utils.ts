@@ -180,8 +180,14 @@ export const pickNonNull = obj => {
   return defined
 }
 
-export const ensureNoPendingCheck = state => {
-  if (state.checkStatus && getEnumValueId(state.checkStatus) === 'inprogress') {
+export const isVirginCheck = check => !check.onfidoStatus
+
+export const isPendingCheck = check => {
+  return check.onfidoStatus && getEnumValueId(check.onfidoStatus) === 'inprogress'
+}
+
+export const ensureNoPendingCheck = check => {
+  if (isPendingCheck(check)) {
     throw new Error('cannot upload selfie until pending check is resolved')
   }
 }
@@ -250,16 +256,6 @@ export const addLinks = (resource) => {
     _link: buildResource.link(resource),
     _permalink: buildResource.permalink(resource)
   })
-}
-
-export const batchify = (arr, batchSize) => {
-  const batches = []
-  while (arr.length) {
-    batches.push(arr.slice(0, batchSize))
-    arr = arr.slice(batchSize)
-  }
-
-  return batches
 }
 
 export const stubFromParsedStub = stub => {

@@ -5,7 +5,8 @@ import onfidoModels from './onfido-models'
 import {
   ApplicantProps,
   ILogger,
-  Document
+  Document,
+  Resource
 } from './types'
 
 import {
@@ -54,9 +55,9 @@ export default class Applicants implements IOnfidoComponent {
     this.preCheckAddress = main.preCheckAddress
   }
 
-  public createOrUpdate = async ({ req, application, state, form }: OnfidoState) => {
-    if (!state) {
-      throw new Error('expected "state"')
+  public createOrUpdate = async ({ req, application, check, form }: OnfidoState) => {
+    if (!check) {
+      throw new Error('expected "check"')
     }
 
     const productOptions = this.main.getProductOptions(application.requestFor)
@@ -90,16 +91,17 @@ export default class Applicants implements IOnfidoComponent {
       props.last_name += applicant.slice(0, 4)
     }
 
-    if (state.onfidoApplicant) {
-      return await this.update({ req, application, state, props })
+    if (check.get('onfidoApplicant')) {
+      return await this.update({ req, application, check, props })
     }
 
     try {
       const onfidoApplicant = await this.onfidoAPI.applicants.create(props)
-      state.onfidoApplicant = sanitize(onfidoApplicant).sanitized
-      this.apiUtils.setProps(state, {
+      check.set({
+        onfidoApplicant: this.apiUtils.sanitize(onfidoApplicant),
         applicantDetails: parsedStubs.map(stubFromParsedStub)
       })
+
       return true
     } catch (err) {
       this.logger.error(`failed to create applicant ${applicant}`, err)
@@ -107,9 +109,9 @@ export default class Applicants implements IOnfidoComponent {
     }
   }
 
-  public update = async ({ req, application, state, form, props }: {
+  public update = async ({ req, application, check, form, props }: {
     application: any
-    state: any
+    check: Resource
     req?: any
     form?: any
     props?: any
@@ -123,7 +125,7 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     if (props) {
-      const current = state.onfidoApplicant
+      const current = check.get('onfidoApplicant')
       if (hasUpdate({ current, update: props })) {
         await this.onfidoAPI.applicants.update(current.id, props)
       }
@@ -134,8 +136,8 @@ export default class Applicants implements IOnfidoComponent {
     return false
   }
 
-  public uploadSelfie = async ({ req, application, state, form }: OnfidoState):Promise<boolean> => {
-    ensureNoPendingCheck(state)
+  public uploadSelfie = async ({ req, application, check, form }: OnfidoState):Promise<boolean> => {
+    ensureNoPendingCheck(check)
     if (!form) {
       throw new Error(`expected "form" to be ${SELFIE}`)
     }
@@ -144,12 +146,12 @@ export default class Applicants implements IOnfidoComponent {
     const { mimeType, data } = parseDataUri(selfie.url)
     this.logger.debug('uploading selfie')
     try {
-      const result = await this.onfidoAPI.applicants.uploadLivePhoto(state.onfidoApplicant.id, {
+      const result = await this.onfidoAPI.applicants.uploadLivePhoto(check.get('onfidoApplicant').id, {
         file: data,
         filename: `live-photo-${digest(data)}.${getExtension(mimeType)}`
       })
 
-      this.apiUtils.setProps(state, { selfie: form })
+      check.set({ selfie: form })
       return true
     } catch (error) {
       // {
@@ -170,8 +172,8 @@ export default class Applicants implements IOnfidoComponent {
     }
   }
 
-  public uploadPhotoID = async ({ req, application, state, form }: OnfidoState) => {
-    ensureNoPendingCheck(state)
+  public uploadPhotoID = async ({ req, application, check, form }: OnfidoState) => {
+    ensureNoPendingCheck(check)
     if (!form) {
       throw new Error(`expected "form" to be ${PHOTO_ID}`)
     }
@@ -191,8 +193,8 @@ export default class Applicants implements IOnfidoComponent {
 
     this.logger.debug('uploading document')
     try {
-      await this.onfidoAPI.applicants.uploadDocument(state.onfidoApplicant.id, document)
-      this.apiUtils.setProps(state, { photoID: form })
+      await this.onfidoAPI.applicants.uploadDocument(check.get('onfidoApplicant').id, document)
+      check.set({ photoID: form })
       return true
     } catch (error) {
       await this.main.handleOnfidoError({ req, error })

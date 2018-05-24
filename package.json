@@ -12,17 +12,17 @@
   "author": "Mark Vayngrib <mark@tradle.io>",
   "license": "MIT",
   "dependencies": {
-    "@tradle/build-resource": "^3.0.0",
-    "@tradle/constants": "^2.1.0",
+    "@tradle/build-resource": "^4.0.1",
+    "@tradle/constants": "^2.3.2",
     "@tradle/merge-models": "^2.1.0",
-    "@tradle/validate-model": "^6.0.1",
-    "@tradle/validate-resource": "^3.0.0",
+    "@tradle/validate-model": "^7.0.0",
+    "@tradle/validate-resource": "^4.0.0",
     "lodash": "^4.17.4",
     "parse-data-uri": "^0.2.0"
   },
   "devDependencies": {
     "@tradle/custom-models": "github:tradle/custom-models",
-    "@tradle/engine": "^5.4.0",
+    "@tradle/engine": "^6.0.0",
     "@tradle/models": "github:tradle/models",
     "@tradle/models-nz": "github:tradle/models-nz",
     "@tradle/models-onfido": "github:tradle/models-onfido",

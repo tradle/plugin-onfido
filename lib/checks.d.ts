@@ -1,6 +1,6 @@
 import { Onfido } from './';
 import APIUtils from './api-utils';
-import { IOnfidoComponent, ILogger, CheckMapping } from './types';
+import { IOnfidoComponent, ILogger, Check, Resource } from './types';
 export default class Checks implements IOnfidoComponent {
     applications: any;
     bot: any;
@@ -8,52 +8,41 @@ export default class Checks implements IOnfidoComponent {
     logger: ILogger;
     apiUtils: APIUtils;
     constructor(main: Onfido);
-    create: ({ req, application, state, reports, saveState }: {
+    create: ({ req, application, check, reports }: {
         req?: any;
         application: any;
-        state: any;
+        check: Resource;
         reports: string[];
-        saveState: boolean;
-    }) => Promise<any>;
-    processReport: ({ req, application, state, check, report }: {
-        req: any;
-        application: any;
-        state: any;
-        check: any;
-        report: any;
     }) => Promise<void>;
-    processCheck: ({ req, application, state, current, update, saveState }: {
+    processReport: ({ req, application, check, report }: {
         req?: any;
-        saveState: boolean;
         application: any;
-        state: any;
-        current: any;
-        update: any;
-    }) => Promise<any>;
-    processCompletedReport: ({ req, application, state, report }: {
-        req: any;
-        application: any;
-        state: any;
+        check: Resource;
         report: any;
     }) => Promise<void>;
-    lookupByCheckId: (checkId: string) => Promise<{
+    processCheck: ({ req, application, check, onfidoCheck }: {
+        req?: any;
         application: any;
-        state: any;
-        check: any;
-    }>;
-    saveCheckMapping: ({ state, check }: {
-        state: any;
-        check: any;
+        check: Resource;
+        onfidoCheck: any;
     }) => Promise<void>;
-    getCheckMapping: (checkId: string) => Promise<CheckMapping>;
-    fetch: ({ applicantId, checkId }: {
+    processCompletedReport: ({ req, application, check, report }: {
+        req: any;
+        application: any;
+        check: any;
+        report: any;
+    }) => Promise<void>;
+    fetchFromOnfido: ({ applicantId, checkId }: {
         applicantId: string;
         checkId: string;
     }) => Promise<any>;
-    list: () => Promise<any>;
-    listWithStatus: (status: string | string[]) => Promise<any>;
-    listPending: () => Promise<any>;
-    listCompleted: () => Promise<any>;
-    listWithdrawn: () => Promise<any>;
+    list: () => Promise<Check[]>;
+    getByCheckId: (checkId: any) => Promise<Resource>;
+    listWithApplication: (permalink: any) => Promise<Check[]>;
+    listWithStatus: (status: string | string[]) => Promise<Check[]>;
+    listPending: () => Promise<Check[]>;
+    listCompleted: () => Promise<Check[]>;
+    listWithdrawn: () => Promise<Check[]>;
     sync: () => Promise<void>;
+    private _list;
 }

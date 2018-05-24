@@ -5,7 +5,7 @@ import { Onfido } from './'
 import APIUtils from './api-utils'
 import models from './models'
 import onfidoModels from './onfido-models'
-import { IOnfidoComponent, ILogger, CheckMapping } from './types'
+import { IOnfidoComponent, ILogger, Check, Resource } from './types'
 import {
   ensureNoPendingCheck,
   parseStub,
@@ -14,8 +14,6 @@ import {
   createOnfidoVerification,
   parseReportURL,
   addLinks,
-  sanitize,
-  batchify
 } from './utils'
 
 import { toOnfido, fromOnfido } from './enum-value-map'
@@ -59,15 +57,15 @@ export default class Checks implements IOnfidoComponent {
     this.apiUtils = main.apiUtils
   }
 
-  public create = async ({ req, application, state, reports, saveState }: {
+  public create = async ({ req, application, check, reports }: {
     req?:any,
     application: any
-    state: any
+    check: Resource
     reports: string[]
-    saveState: boolean
   }) => {
-    ensureNoPendingCheck(state)
-    if (!state.onfidoApplicant) {
+    debugger
+    ensureNoPendingCheck(check)
+    if (!check.get('onfidoApplicant')) {
       throw new Error('expected "onfidoApplicant" to have been created already')
     }
 
@@ -81,44 +79,26 @@ export default class Checks implements IOnfidoComponent {
       }
     })
 
-    let check = await this.onfidoAPI.checks.create(state.onfidoApplicant.id, {
+    const onfidoCheck = await this.onfidoAPI.checks.create(check.get('onfidoApplicant').id, {
       reports: reports.map(name => REPORT_TYPE_TO_ONFIDO_NAME[name])
     })
 
-    check = sanitize(check).sanitized
-    const current = buildResource({
-        models,
-        model: onfidoModels.check
-      })
-      .set({
-        status: 'inprogress',
-        reportsOrdered: reports.map(id => ({ id })),
-        rawData: check,
-        checkId: check.id,
-        applicantId: state.onfidoApplicant.id
-      })
-      .toJSON()
-
-    const updated = await this.processCheck({
+    await this.processCheck({
       req,
       application,
-      state,
-      current,
-      update: check,
-      saveState
+      check,
+      onfidoCheck
     })
-
-    await this.saveCheckMapping({
-      check: updated,
-      state
-    })
-
-    return check
   }
 
-  public processReport = async ({ req, application, state, check, report }) => {
-    if (!(application && state && check)) {
-      throw new Error('expected "application", "state", and "check"')
+  public processReport = async ({ req, application, check, report }: {
+    req?:any,
+    application: any
+    check: Resource
+    report: any
+  }) => {
+    if (!(application && check)) {
+      throw new Error('expected "application" and "check"')
     }
 
     // ({ application, state, check } = await this.loadStateAppAndCheck({
@@ -128,8 +108,10 @@ export default class Checks implements IOnfidoComponent {
     //   report
     // }))
 
-    const idx = check.rawData.reports.findIndex(r => r.id === report.id)
-    check.rawData.reports[idx] = report
+    const rawData = _.cloneDeep(check.get('rawData'))
+    const idx = rawData.reports.findIndex(r => r.id === report.id)
+    rawData.reports[idx] = report
+    check.set({ rawData })
 
     // const { reportsResults=[] } = check
     // const idx = reportsResults.findIndex(r => r.id === report.id)
@@ -141,76 +123,60 @@ export default class Checks implements IOnfidoComponent {
 
     // check.reportsResults = reportsResults
     if (report.status === 'complete') {
-      await this.processCompletedReport({ req, application, state, report })
+      await this.processCompletedReport({ req, application, check, report })
     }
   }
 
-  public processCheck = async ({ req, application, state, current, update, saveState }: {
-    req?:any,
-    saveState: boolean,
-    application,
-    state,
-    current,
-    update
+  public processCheck = async ({ req, application, check, onfidoCheck }: {
+    req?:any
+    application
+    check: Resource,
+    onfidoCheck: any
   }) => {
-    if (!(application && state && current)) {
-      throw new Error('expected "application", "state", and "current"')
+
+    onfidoCheck = this.apiUtils.sanitize(onfidoCheck)
+
+    if (!(application && check && onfidoCheck)) {
+      throw new Error('expected "application", "check" and "onfidoCheck')
     }
 
-    const { applicant } = state
-    const { status, result } = update
+    const prevOnfidoCheck = check.get('rawData')
+    const applicant = check.get('applicant')
+    const { status, result, id } = onfidoCheck
     const newCheckProps:any = {
-      status: fromOnfido[status] || status
+      onfidoCheckId: id,
+      onfidoStatus: fromOnfido[status] || status,
+      rawData: onfidoCheck,
     }
 
     if (result) {
-      newCheckProps.result = result
-      this.apiUtils.setProps(state, { result })
+      newCheckProps.onfidoResult = result
     }
 
-    this.apiUtils.setProps(current, newCheckProps)
-    if (isComplete(update)) {
-      this.logger.info(`check for ${applicant.id} completed with result: ${result}`)
+    check.set(newCheckProps)
+    if (isComplete(onfidoCheck)) {
+      this.logger.info(`check for ${applicant._permalink} completed with result: ${result}`)
     } else {
-      this.logger.debug(`check for ${applicant.id} status: ${status}`)
+      this.logger.debug(`check for ${applicant._permalink} status: ${status}`)
     }
 
     const reports = getCompletedReports({
-      current: current[SIG] ? current.rawData : null,
-      update
+      current: prevOnfidoCheck,
+      update: onfidoCheck
     })
 
     if (reports.length) {
       const appCopy = _.cloneDeep(application)
       await Promise.all(reports.map(report => {
-        return this.processReport({ req, application, state, check: current, report })
+        return this.processReport({ req, application, check, report })
       }))
     }
 
-    current.rawData = sanitize(current.rawData).sanitized
-
-    let updated
-    if (current[SIG]) {
-      updated = await this.bot.versionAndSave(current)
-    } else {
-      updated = await this.bot.signAndSave(current)
-    }
-
-    this.apiUtils.setProps(state, {
-      check: updated,
-      checkStatus: updated.status
-    })
-
-    if (saveState) {
-      await this.bot.versionAndSave(state)
-    }
-
-    // emitCompletedReports({ applicant, current: updated, update })
-    return updated
+    await check.signAndSave()
   }
 
-  public processCompletedReport = async ({ req, application, state, report }) => {
-    const { applicant, applicantDetails, selfie, photoID } = state
+  public processCompletedReport = async ({ req, application, check, report }) => {
+    const { applicant, applicantDetails, selfie, photoID } = check.toJSON({ validate: false })
     const type = report.name
 
     const applicantPermalink = parseStub(applicant).permalink
@@ -232,7 +198,6 @@ export default class Checks implements IOnfidoComponent {
       return
     }
 
-    report = sanitize(report).sanitized
     if (report.result !== 'clear') return
 
     await Promise.all(stubs.map(async (stub) => {
@@ -255,93 +220,7 @@ export default class Checks implements IOnfidoComponent {
     }))
   }
 
-  public lookupByCheckId = async (checkId:string) => {
-    const { application, state, check } = await this.getCheckMapping(checkId)
-    return {
-      application: await this.apiUtils.getResource({
-        type: APPLICATION,
-        permalink: application
-      }),
-      state: await this.apiUtils.getResource({
-        type: onfidoModels.state.id,
-        permalink: state
-      }),
-      check: await this.apiUtils.getResource({
-        type: onfidoModels.check.id,
-        permalink: check
-      })
-    }
-  }
-
-  // public lookupByCheckId = async (opts: {
-  //   application: any,
-  //   state: any,
-  //   checkId?: string,
-  //   check?: any
-  // }) => {
-  //   if (opts.application && opts.state && opts.check) {
-  //     return opts
-  //   }
-
-  //   const mapping = opts.state
-  //     ? {
-  //       application: parseStub(opts.state.application).permalink,
-  //       state: opts.state._permalink,
-  //       check: opts.state.check && parseStub(opts.state.check).permalink
-  //     }
-  //     : await this.getCheckMapping(opts.checkId)
-
-  //   const getApplication = opts.application
-  //     ? Promise.resolve(opts.application)
-  //     : this.apiUtils.getResource({
-  //         type: APPLICATION,
-  //         permalink: mapping.application
-  //       })
-
-  //   const getState = opts.state
-  //     ? Promise.resolve(opts.state)
-  //     : this.apiUtils.getResource({
-  //         type: onfidoModels.state.id,
-  //         permalink: mapping.state
-  //       })
-
-  //   const getCheck = opts.check
-  //     ? Promise.resolve(opts.check)
-  //     : mapping.check && this.apiUtils.getResource({
-  //         type: onfidoModels.check.id,
-  //         permalink: mapping.check
-  //       })
-
-  //   return {
-  //     application: await getApplication,
-  //     state: await getState,
-  //     check: await getCheck
-  //   }
-  // }
-
-  // public loadStateAppAndCheck = async ({ application, state, check, report }) => {
-  //   const checkId = check ? check.checkId : parseReportURL(report.href).checkId
-  //   return await this.lookupByCheckId({
-  //     application,
-  //     state,
-  //     check,
-  //     checkId
-  //   })
-  // }
-
-  public saveCheckMapping = async ({ state, check }) => {
-    await this.bot.kv.put(getCheckKey(check.rawData.id), {
-      application: parseStub(state.application).permalink,
-      state: buildResource.permalink(state),
-      check: buildResource.permalink(check)
-    })
-  }
-
-  public getCheckMapping = async (checkId:string):Promise<CheckMapping> => {
-    return await this.bot.kv.get(getCheckKey(checkId))
-  }
-
-  public fetch = async ({ applicantId, checkId }: {
+  public fetchFromOnfido = async ({ applicantId, checkId }: {
     applicantId:string
     checkId:string
   }) => {
@@ -353,8 +232,8 @@ export default class Checks implements IOnfidoComponent {
     })
   }
 
-  public list = async () => {
-    return await this.bot.db.find({
+  public list = async ():Promise<Check[]> => {
+    return await this._list({
       filter: {
         EQ: {
           [TYPE]: onfidoModels.check.id
@@ -363,8 +242,33 @@ export default class Checks implements IOnfidoComponent {
     })
   }
 
-  public listWithStatus = async (status:string|string[]) => {
-    return await this.bot.db.find({
+  public getByCheckId = async (checkId):Promise<Resource> => {
+    const check = await this.bot.db.findOne({
+      filter: {
+        EQ: {
+          [TYPE]: onfidoModels.check.id,
+          onfidoCheckId: checkId
+        }
+      }
+    })
+
+    return this.bot.draft(onfidoModels.check.id)
+      .set(check)
+  }
+
+  public listWithApplication = async (permalink):Promise<Check[]> => {
+    return await this._list({
+      filter: {
+        EQ: {
+          [TYPE]: onfidoModels.check.id,
+          'application._permalink:': permalink
+        }
+      }
+    })
+  }
+
+  public listWithStatus = async (status:string|string[]):Promise<Check[]> => {
+    return await this._list({
       filter: {
         EQ: {
           [TYPE]: onfidoModels.check.id
@@ -385,19 +289,25 @@ export default class Checks implements IOnfidoComponent {
 
   public sync = async () => {
     const pending = await this.listPending()
-    const batches = batchify(pending, CHECK_SYNC_BATCH_SIZE)
+    const batches = _.chunk(pending, CHECK_SYNC_BATCH_SIZE)
     const processOne = async (current) => {
-      const update = await this.fetch(current)
+      const update = await this.fetchFromOnfido(current)
       const status = fromOnfido[update.status] || update.status
       if (status === current.status) return
 
-      const { application, state, check } = await this.lookupByCheckId(current.checkId)
-      await this.processCheck({ application, state, current, update, saveState: true })
+      const check = await this.getByCheckId(current.checkId)
+      const application = this.bot.db.get(check.get('application'))
+      await this.processCheck({ application, check, onfidoCheck: update })
     }
 
     for (const batch of batches) {
       await Promise.all(batch.map(processOne))
     }
+  }
+
+  private _list = async (opts) => {
+    const { items } = await this.bot.db.find(opts)
+    return items
   }
 }
 

@@ -94,9 +94,34 @@ export type OnfidoAddress = {
   flat_number?: string
 }
 
+export type Check = {
+  application: any
+  selfie: any
+  photoID: any
+  rawData: any
+  errors: any
+  reportsOrdered: any[]
+  status: any
+  onfidoStatus: any
+  onfidoResult: any
+  onfidoApplicant: any
+  onfidoCheckId: string
+}
+
+export type Resource = {
+  get(key: string): any
+  set(key: string, value: any): void
+  set(props: any): void
+  save():Promise<any|void>
+  sign():Promise<any|void>
+  signAndSave():Promise<any|void>
+  toJSON(opts: any): any
+  isModified(): boolean
+}
+
 export type OnfidoState = {
   application: any
-  state: any
+  check: Resource
   // incoming form
   req?: any
   form?: any
@@ -105,12 +130,12 @@ export type OnfidoState = {
 export type IncomingFormReq = {
   req: any
   application: any
-  state: any
+  check?: Resource
   form?: any
 }
 
-export type CheckMapping = {
-  application: string
-  state: string
-  check: string
-}
+// export type CheckMapping = {
+//   application: string
+//   state: string
+//   check: string
+// }

@@ -1,4 +1,4 @@
-import { ILogger } from './types';
+import { ILogger, Resource } from './types';
 import APIUtils from './api-utils';
 import { IOnfidoComponent, OnfidoState } from './types';
 import { Onfido } from './';
@@ -12,14 +12,14 @@ export default class Applicants implements IOnfidoComponent {
     preCheckAddress: boolean;
     private main;
     constructor(main: Onfido);
-    createOrUpdate: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
-    update: ({ req, application, state, form, props }: {
+    createOrUpdate: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
+    update: ({ req, application, check, form, props }: {
         application: any;
-        state: any;
+        check: Resource;
         req?: any;
         form?: any;
         props?: any;
     }) => Promise<boolean>;
-    uploadSelfie: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
-    uploadPhotoID: ({ req, application, state, form }: OnfidoState) => Promise<boolean>;
+    uploadSelfie: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
+    uploadPhotoID: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
 }

@@ -4,8 +4,6 @@ declare const models: {
     reportStatus: any;
     reportType: any;
     check: any;
-    state: any;
-    stateStub: any;
     all: {};
 };
 export default models;
