@@ -63,7 +63,6 @@ export default class Checks implements IOnfidoComponent {
     check: Resource
     reports: string[]
   }) => {
-    debugger
     ensureNoPendingCheck(check)
     if (!check.get('onfidoApplicant')) {
       throw new Error('expected "onfidoApplicant" to have been created already')
@@ -172,7 +171,11 @@ export default class Checks implements IOnfidoComponent {
       }))
     }
 
-    await check.signAndSave()
+    if (check.isModified()) {
+      await check.signAndSave()
+    } else {
+      this.logger.debug(`check hasn't changed, ignoring update`)
+    }
   }
 
   public processCompletedReport = async ({ req, application, check, report }) => {
@@ -260,7 +263,7 @@ export default class Checks implements IOnfidoComponent {
       filter: {
         EQ: {
           [TYPE]: onfidoModels.check.id,
-          'application._permalink:': permalink
+          'application._permalink': permalink
         }
       }
     })

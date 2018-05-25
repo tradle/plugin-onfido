@@ -295,7 +295,7 @@ test('common case', loudAsync(async (t) => {
 
   t.ok(check.get('photoID'))
 
-  await onfido.createCheck({ application, check })
+  await onfido.createOnfidoCheck({ application, check })
   t.equal(check.get('onfidoResult'), undefined)
   t.ok(check.get('rawData'))
   // t.same(check.get('onfidoStatus'), fixStub({ id: 'tradle.onfido.CheckStatus_inprogress', title: 'In progress' }))

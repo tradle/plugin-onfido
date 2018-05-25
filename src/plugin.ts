@@ -125,27 +125,54 @@ export default class Onfido implements IOnfidoComponent {
       return
     }
 
+    const form = _.cloneDeep(payload)
+    const resolveEmbeds = this.bot.resolveEmbeds(form)
     const checks = await this.checks.listWithApplication(application._permalink)
     const pending = checks.find(utils.isPendingCheck)
     // nothing can be done until a check completes
     if (pending) {
-      this.logger.debug(`check is already pending, ignoring ${payload[TYPE]}`)
+      this.logger.debug(`check is already pending, ignoring ${form[TYPE]}`)
       return
     }
 
-    const check = this.bot.draft({
-      type: onfidoModels.check.id
-    })
-
+    let props
     const nonPending = checks.find(utils.isVirginCheck)
     if (nonPending) {
-      check.set(nonPending)
+      props = nonPending
     } else {
-      check.set({ application, applicant })
+      props = {
+        application: buildResource.stub({
+          models: this.models,
+          model: this.models[APPLICATION],
+          resource: application
+        }),
+        applicant
+      }
+
+      if (checks.length) {
+        const latest = _.maxBy(checks, '_time')
+        _.extend(props, _.pick(latest, ['onfidoApplicant']))
+        ;['selfie', 'photoID'].forEach(prop => {
+          const stub = latest[prop]
+          if (!stub) return
+
+          const parsed = parseStub(stub)
+          const match = application.forms.find(sub => parseStub(sub.submission).link === parsed.link)
+          if (match) {
+            props[prop] = match.submission
+          }
+        })
+      }
     }
 
-    await this.handleForm({ req, application, check, form: payload })
-    if (!check.get(SIG)) {
+    const check = this.bot.draft({
+      type: onfidoModels.check.id,
+      resource: props
+    })
+
+    await resolveEmbeds
+    await this.handleForm({ req, application, check, form })
+    if (check.isModified()) {
       await check.signAndSave()
     }
   }
@@ -245,7 +272,7 @@ export default class Onfido implements IOnfidoComponent {
     return false
   }
 
-  public createCheck = async ({ req, application, check, reports }: {
+  public createOnfidoCheck = async ({ req, application, check, reports }: {
     req?: any
     reports?: string[]
     application: any
@@ -329,7 +356,15 @@ export default class Onfido implements IOnfidoComponent {
       throw httpError(400, msg)
     }
 
-    const check = await this.checks.getByCheckId(checkId)
+    let check
+    try {
+      check = await this.checks.getByCheckId(checkId)
+    } catch (err) {
+      const msg = `check not found`
+      this.logger.warn(`${msg}: ${err.message}`)
+      throw httpError(400, msg)
+    }
+
     applicantId = check.get('onfidoApplicant').id
     const getUpdatedCheck = this.checks.fetchFromOnfido({ applicantId, checkId })
 
@@ -348,11 +383,6 @@ export default class Onfido implements IOnfidoComponent {
     } catch (error) {
       await this.handleOnfidoError({ req: opts.req, error })
       return
-    }
-
-    const { check } = opts
-    if (check.isModified()) {
-      await check.signAndSave()
     }
   }
 
@@ -381,7 +411,7 @@ export default class Onfido implements IOnfidoComponent {
 
     await this.uploadAttachments({ req, application, check, form })
     if (check.get('photoID') && check.get('selfie')) {
-      await this.createCheck({ req, application, check })
+      await this.createOnfidoCheck({ req, application, check })
     }
   }
 
@@ -446,7 +476,8 @@ const getStateKey = application => {
 }
 
 const httpError = (status, message) => {
-  const err:any = new Error('message')
+  debugger
+  const err:any = new Error(message)
   err.status = status
   return err
 }

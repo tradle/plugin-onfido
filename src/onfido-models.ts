@@ -19,7 +19,8 @@ const models = {
 }
 
 for (let name in models) {
-  models.all[name] = models[name]
+  let model = models[name]
+  models.all[model.id] = model
 }
 
 export default models

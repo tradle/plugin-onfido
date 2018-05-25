@@ -143,7 +143,8 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     const { selfie } = form
-    const { mimeType, data } = parseDataUri(selfie.url)
+    const { mimeType, data } = parseDataUri(selfie.url);
+
     this.logger.debug('uploading selfie')
     try {
       const result = await this.onfidoAPI.applicants.uploadLivePhoto(check.get('onfidoApplicant').id, {

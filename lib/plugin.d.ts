@@ -25,7 +25,7 @@ export default class Onfido implements IOnfidoComponent {
         req: any;
         error: any;
     }) => Promise<boolean>;
-    createCheck: ({ req, application, check, reports }: {
+    createOnfidoCheck: ({ req, application, check, reports }: {
         req?: any;
         reports?: string[];
         application: any;
