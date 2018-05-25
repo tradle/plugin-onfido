@@ -131,9 +131,14 @@ export default class Onfido implements IOnfidoComponent {
     const resolveEmbeds = this.bot.resolveEmbeds(form)
     const checks = await this.checks.listWithApplication(application._permalink)
     const pending = checks.find(utils.isPendingCheck)
+
     // nothing can be done until a check completes
     if (pending) {
-      this.logger.debug(`check is already pending, ignoring ${form[TYPE]}`)
+      this.logger.debug(`check is already pending, ignoring form`, {
+        form: form[TYPE],
+        application: application._permalink
+      })
+
       return
     }
 
@@ -261,7 +266,10 @@ export default class Onfido implements IOnfidoComponent {
     }
 
     const prefill = _.omit(await this.apiUtils.getResource(form, req), SIG)
-    this.logger.debug(`requesting edit of ${formType}`)
+    this.logger.debug(`requesting edit`, {
+      form: formType
+    })
+
     await this.applications.requestEdit({
       req,
       item: prefill,
@@ -308,6 +316,7 @@ export default class Onfido implements IOnfidoComponent {
       }
     })
 
+    this.logger.debug(`registering webhook`, { url })
     const webhook = await this.onfidoAPI.webhooks.register({ url, events })
     await this.conf.put(this.webhookKey, webhook)
     return webhook
@@ -318,6 +327,8 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   public processWebhookEvent = async (opts) => {
+    this.logger.debug(`processing webhook event`)
+
     try {
       await this._processWebhookEvent(opts)
     } catch (err) {
@@ -387,6 +398,10 @@ export default class Onfido implements IOnfidoComponent {
       getUpdatedCheck,
       getApplication
     ])
+
+    this.logger.debug(`updating check from webhook event`, {
+      check: check.permalink
+    })
 
     await this.checks.processCheck({ application, check, onfidoCheck })
   }

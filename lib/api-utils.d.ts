@@ -15,6 +15,7 @@ export default class APIUtils {
     }) => Promise<boolean>;
     stub: (resource: any) => any;
     setProps: (resource: any, properties: any) => void;
+    toStableStub: (stub: any) => any;
     isTestMode(): boolean;
     sanitize: (obj: any) => any;
 }

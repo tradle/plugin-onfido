@@ -78,6 +78,10 @@ export default class Checks implements IOnfidoComponent {
       }
     })
 
+    this.logger.debug(`creating check`, {
+      application: application._permalink
+    })
+
     const onfidoCheck = await this.onfidoAPI.checks.create(check.get('onfidoApplicant').id, {
       reports: reports.map(name => REPORT_TYPE_TO_ONFIDO_NAME[name])
     })
@@ -154,11 +158,9 @@ export default class Checks implements IOnfidoComponent {
     }
 
     check.set(newCheckProps)
-    if (isComplete(onfidoCheck)) {
-      this.logger.info(`check for ${applicant._permalink} completed with result: ${result}`)
-    } else {
-      this.logger.debug(`check for ${applicant._permalink} status: ${status}`)
-    }
+    this.logger.debug(`check status update: ${status}`, {
+      application: application._permalink
+    })
 
     const reports = getCompletedReports({
       current: prevOnfidoCheck,
@@ -175,7 +177,9 @@ export default class Checks implements IOnfidoComponent {
     if (check.isModified()) {
       await check.signAndSave()
     } else {
-      this.logger.debug(`check hasn't changed, ignoring update`)
+      this.logger.debug(`check hasn't changed, ignoring update`, {
+        application: application._permalink
+      })
     }
   }
 
@@ -183,9 +187,8 @@ export default class Checks implements IOnfidoComponent {
     const { applicant, applicantDetails, selfie, photoID } = check.toJSON({ validate: false })
     const type = report.name
 
-    const applicantPermalink = parseStub(applicant).permalink
     this.logger.debug('report complete', {
-      applicant: applicantPermalink,
+      application: application._permalink,
       type,
       result: report.result
     })
@@ -206,8 +209,8 @@ export default class Checks implements IOnfidoComponent {
 
     await Promise.all(stubs.map(async (stub) => {
       this.logger.debug('creating verification for', {
-        applicant: applicantPermalink,
-        form: stub
+        application: application._permalink,
+        form: this.apiUtils.toStableStub(stub)
       })
 
       const verification = createOnfidoVerification({
@@ -228,7 +231,7 @@ export default class Checks implements IOnfidoComponent {
     applicantId:string
     checkId:string
   }) => {
-    this.logger.debug(`looking up check ${checkId} for applicant ${applicantId}`)
+    this.logger.debug(`looking up check`, { checkId, applicantId })
     return await this.onfidoAPI.checks.get({
       applicantId,
       checkId,

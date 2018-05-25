@@ -1,6 +1,7 @@
 import _ = require('lodash')
 import parseDataUri = require('parse-data-uri')
 import { TYPE } from '@tradle/constants'
+import models from './models'
 import onfidoModels from './onfido-models'
 import {
   ApplicantProps,
@@ -68,7 +69,10 @@ export default class Applicants implements IOnfidoComponent {
     })
 
     if (!parsedStubs) {
-      this.logger.debug(`don't have the requisite forms to create an applicant`)
+      this.logger.debug(`not enough info to create an applicant (yet)`, {
+        application: application._permalink
+      })
+
       return false
     }
 
@@ -94,6 +98,10 @@ export default class Applicants implements IOnfidoComponent {
     if (check.get('onfidoApplicant')) {
       return await this.update({ req, application, check, props })
     }
+
+    this.logger.debug('creating applicant', {
+      application: application._permalink
+    })
 
     try {
       const onfidoApplicant = await this.onfidoAPI.applicants.create(props)
@@ -127,6 +135,10 @@ export default class Applicants implements IOnfidoComponent {
     if (props) {
       const current = check.get('onfidoApplicant')
       if (hasUpdate({ current, update: props })) {
+        this.logger.debug('updating applicant', {
+          application: application._permalink
+        })
+
         await this.onfidoAPI.applicants.update(current.id, props)
       }
 
@@ -145,14 +157,20 @@ export default class Applicants implements IOnfidoComponent {
     const { selfie } = form
     const { mimeType, data } = parseDataUri(selfie.url);
 
-    this.logger.debug('uploading selfie')
+    this.logger.debug('uploading selfie', {
+      application: application._permalink
+    })
+
     try {
       const result = await this.onfidoAPI.applicants.uploadLivePhoto(check.get('onfidoApplicant').id, {
         file: data,
         filename: `live-photo-${digest(data)}.${getExtension(mimeType)}`
       })
 
-      check.set({ selfie: form })
+      check.set({
+        selfie: this.apiUtils.stub(form)
+      })
+
       return true
     } catch (error) {
       // {
@@ -168,7 +186,7 @@ export default class Applicants implements IOnfidoComponent {
       //   "status": 422
       // }
 
-      this.logger.error('upload live photo failed', error)
+      this.logger.error('upload selfie failed', error)
       return await this.main.handleOnfidoError({ req, error })
     }
   }
@@ -192,10 +210,16 @@ export default class Applicants implements IOnfidoComponent {
       document.side = 'front'
     }
 
-    this.logger.debug('uploading document')
+    this.logger.debug('uploading photoID document', {
+      application: application._permalink
+    })
+
     try {
       await this.onfidoAPI.applicants.uploadDocument(check.get('onfidoApplicant').id, document)
-      check.set({ photoID: form })
+      check.set({
+        photoID: this.apiUtils.stub(form)
+      })
+
       return true
     } catch (error) {
       await this.main.handleOnfidoError({ req, error })

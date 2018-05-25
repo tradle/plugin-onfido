@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { TYPE } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import { equalish, parseStub, sanitize } from './utils'
@@ -102,6 +103,8 @@ export default class APIUtils {
       properties
     })
   }
+
+  public toStableStub = stub => _.omit(stub, '_displayName')
 
   public isTestMode () {
     return this.onfidoAPI.mode === 'test'

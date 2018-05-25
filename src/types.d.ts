@@ -117,6 +117,8 @@ export type Resource = {
   signAndSave():Promise<any|void>
   toJSON(opts: any): any
   isModified(): boolean
+  permalink?: string
+  link?: string
 }
 
 export type OnfidoState = {
