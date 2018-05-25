@@ -1,6 +1,6 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions, OnfidoResult } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions, OnfidoResult, Resource } from './types';
 import APIUtils from './api-utils';
 export default class Onfido implements IOnfidoComponent {
     applicants: Applicants;
@@ -29,7 +29,7 @@ export default class Onfido implements IOnfidoComponent {
         req?: any;
         reports?: string[];
         application: any;
-        check: any;
+        check: Resource;
     }) => Promise<void>;
     unregisterWebhook: ({ url }: {
         url: any;
@@ -39,7 +39,8 @@ export default class Onfido implements IOnfidoComponent {
         events?: string[];
     }) => Promise<any>;
     getWebhook: () => Promise<any>;
-    processWebhookEvent: ({ req, body, desiredResult }: {
+    processWebhookEvent: (opts: any) => Promise<void>;
+    _processWebhookEvent: ({ req, body, desiredResult }: {
         req: any;
         body?: any;
         desiredResult?: OnfidoResult;
@@ -50,5 +51,7 @@ export default class Onfido implements IOnfidoComponent {
     uploadAttachments: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
     sync: () => Promise<void>;
     private getForm;
+    private getRequiredAttachments;
+    private hasRequiredAttachments;
 }
 export { Onfido };

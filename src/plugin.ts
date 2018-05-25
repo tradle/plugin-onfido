@@ -13,7 +13,8 @@ import {
   OnfidoState,
   ProductOptions,
   OnfidoResult,
-  Check
+  Check,
+  Resource
 } from './types'
 
 import APIUtils from './api-utils'
@@ -276,7 +277,7 @@ export default class Onfido implements IOnfidoComponent {
     req?: any
     reports?: string[]
     application: any
-    check: any
+    check: Resource
   }) => {
     this.ensureProductSupported({ application })
 
@@ -311,7 +312,15 @@ export default class Onfido implements IOnfidoComponent {
     return await this.conf.get(this.webhookKey)
   }
 
-  public processWebhookEvent = async ({ req, body, desiredResult }: {
+  public processWebhookEvent = async (opts) => {
+    try {
+      await this._processWebhookEvent(opts)
+    } catch (err) {
+      throw httpError(err.status || 500, 'failed to process webhook event')
+    }
+  }
+
+  public _processWebhookEvent = async ({ req, body, desiredResult }: {
     req:any,
     body?:any,
     desiredResult?: OnfidoResult
@@ -409,8 +418,10 @@ export default class Onfido implements IOnfidoComponent {
       if (!ok) return
     }
 
-    await this.uploadAttachments({ req, application, check, form })
-    if (check.get('photoID') && check.get('selfie')) {
+    const ok = await this.uploadAttachments({ req, application, check, form })
+    if (!ok) return
+
+    if (this.hasRequiredAttachments({ application, check })) {
       await this.createOnfidoCheck({ req, application, check })
     }
   }
@@ -437,7 +448,8 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   public uploadAttachments = async ({ req, application, check, form }: OnfidoState):Promise<boolean> => {
-    if (!check.get('selfie')) {
+    const props = this.getRequiredAttachments(application)
+    if (props.includes('selfie') && !check.get('selfie')) {
       const selfie = await this.getForm({ type: SELFIE, application, form, req })
       if (selfie) {
         const ok = await this.applicants.uploadSelfie({ req, application, check, form: selfie })
@@ -445,7 +457,7 @@ export default class Onfido implements IOnfidoComponent {
       }
     }
 
-    if (!check.get('photoID')) {
+    if (props.includes('photoID') && !check.get('photoID')) {
       const photoID = await this.getForm({ type: PHOTO_ID, application, form, req })
       if (photoID) {
         const ok = await this.applicants.uploadPhotoID({ req, application, check, form: photoID })
@@ -467,6 +479,28 @@ export default class Onfido implements IOnfidoComponent {
     if (parsedStub) {
       return await this.apiUtils.getResource(parsedStub, req)
     }
+  }
+
+  private getRequiredAttachments = (application) => {
+    const required:any = {}
+    const { reports } = this.getProductOptions(application.requestFor)
+    if (reports.includes('facialsimilarity')) {
+      required.selfie = true
+    }
+
+    if (reports.includes('document') || reports.includes('identity')) {
+      required.photoID = true
+    }
+
+    return Object.keys(required)
+  }
+
+  private hasRequiredAttachments = ({ application, check }: {
+    application: any
+    check: Resource
+  }) => {
+    const required = this.getRequiredAttachments(application)
+    return required.every(prop => check.get(prop))
   }
 }
 
