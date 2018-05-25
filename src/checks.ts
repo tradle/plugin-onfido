@@ -14,6 +14,7 @@ import {
   createOnfidoVerification,
   parseReportURL,
   addLinks,
+  getStatus,
 } from './utils'
 
 import { toOnfido, fromOnfido } from './enum-value-map'
@@ -155,6 +156,7 @@ export default class Checks implements IOnfidoComponent {
 
     if (result) {
       newCheckProps.onfidoResult = result
+      newCheckProps.status = getStatus(result)
     }
 
     check.set(newCheckProps)

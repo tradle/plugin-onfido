@@ -67,7 +67,7 @@ export const getOnfidoCheckIdKey = checkId => {
 export const getFormsToCreateApplicant = ({ forms, reports }) => {
   const parsed = forms
     .slice()
-    .sort(sortDescendingByDate)
+    // .sort(sortDescendingByDate)
     .map(parseStub)
 
   const propSets = reports.includes('identity') ? APPLICANT_PROPERTY_SETS : APPLICANT_PROPERTY_SETS_MIN
@@ -124,9 +124,9 @@ export const toYYYY_MM_DD_UTC = (date, separator):string => {
   ].join(separator || '')
 }
 
-const sortDescendingByDate = (a, b) => {
-  return b.time - a.time
-}
+// const sortDescendingByDate = (a, b) => {
+//   return b._time - a._time
+// }
 
 export const find = (arr, filter) => {
   let result
@@ -287,3 +287,10 @@ export const getFormStubs = application => (application.forms || [])
   .map(appSub => parseStub(appSub.submission))
 
 export const isAddressRequired = (reports: string[]) => reports.includes('identity')
+
+export const getStatus = (onfidoResult: string) => {
+  if (onfidoResult === 'clear') return 'pass'
+  if (onfidoResult === 'consider') return 'fail'
+
+  return 'error'
+}
