@@ -285,3 +285,5 @@ export const validateProductOptions = (opts:ProductOptions):void => {
 
 export const getFormStubs = application => (application.forms || [])
   .map(appSub => parseStub(appSub.submission))
+
+export const isAddressRequired = (reports: string[]) => reports.includes('identity')

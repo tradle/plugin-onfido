@@ -49,3 +49,4 @@ export declare const addLinks: (resource: any) => void;
 export declare const stubFromParsedStub: (stub: any) => any;
 export declare const validateProductOptions: (opts: ProductOptions) => void;
 export declare const getFormStubs: (application: any) => any;
+export declare const isAddressRequired: (reports: string[]) => boolean;

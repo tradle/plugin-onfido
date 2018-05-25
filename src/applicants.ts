@@ -20,7 +20,8 @@ import {
   ensureNoPendingCheck,
   sanitize,
   stubFromParsedStub,
-  getFormStubs
+  getFormStubs,
+  isAddressRequired
 } from './utils'
 
 import APIUtils from './api-utils'
@@ -80,7 +81,7 @@ export default class Applicants implements IOnfidoComponent {
     const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item, req)))
     const props = getApplicantProps(forms)
     const { first_name, last_name, dob, addresses=[] } = props
-    const needAddress = productOptions.reports.includes('identity')
+    const needAddress = isAddressRequired(productOptions.reports)
     if (!(first_name && last_name && dob && (addresses.length || !needAddress))) {
       return false
     }

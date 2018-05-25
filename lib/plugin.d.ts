@@ -53,5 +53,6 @@ export default class Onfido implements IOnfidoComponent {
     private getForm;
     private getRequiredAttachments;
     private hasRequiredAttachments;
+    private shouldIgnoreForm;
 }
 export { Onfido };

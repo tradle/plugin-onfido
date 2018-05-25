@@ -1,10 +1,12 @@
 import _ = require('lodash')
 import buildResource = require('@tradle/build-resource')
 import { TYPE, SIG } from '@tradle/constants'
-import baseModels from './models'
+import models from './models'
 import onfidoModels from './onfido-models'
 import Applicants from './applicants'
 import Checks from './checks'
+import PROP_MAPS from './onfido-tradle-mapping'
+import * as Extractor from './extractor'
 import {
   ILogger,
   IOnfidoComponent,
@@ -121,9 +123,7 @@ export default class Onfido implements IOnfidoComponent {
     if (!application) return
 
     const { applicant, requestFor } = application
-    const productOpts = this.getProductOptions(requestFor)
-    if (!productOpts) {
-      this.logger.debug(`ignoring product ${requestFor}`)
+    if (this.shouldIgnoreForm({ product: requestFor, form: payload })) {
       return
     }
 
@@ -147,14 +147,15 @@ export default class Onfido implements IOnfidoComponent {
     if (nonPending) {
       props = nonPending
     } else {
+      const { reports } = this.getProductOptions(requestFor)
       props = {
-        reportsOrdered: productOpts.reports.map(id => buildResource.enumValue({
+        reportsOrdered: reports.map(id => buildResource.enumValue({
           model: onfidoModels.reportType,
           value: id
         })),
         application: buildResource.stub({
-          models: this.models,
-          model: this.models[APPLICATION],
+          models,
+          model: models[APPLICATION],
           resource: application
         }),
         applicant
@@ -522,6 +523,40 @@ export default class Onfido implements IOnfidoComponent {
     const required = this.getRequiredAttachments(application)
     return required.every(prop => check.get(prop))
   }
+
+  private shouldIgnoreForm = ({ product, form }) => {
+    const type = form[TYPE]
+    const productOpts = this.getProductOptions(product)
+    if (!productOpts) {
+      this.logger.debug(`ignoring form for product`, {
+        product,
+        form: type,
+      })
+
+      return true
+    }
+
+    if (!PROP_MAPS[type]) {
+      this.logger.debug(`ignoring form with no extractable data`, {
+        product,
+        form: type
+      })
+
+      return true
+    }
+
+    if (!utils.isAddressRequired(productOpts.reports)) {
+      const extractor = Extractor.byForm[type] || {}
+      if (_.isEqual(Object.keys(extractor), ['address'])) {
+        this.logger.debug('address-related reports disabled, ignoring address-related form', {
+          product,
+          form: type
+        })
+
+        return true
+      }
+    }
+  }
 }
 
 export { Onfido }
@@ -530,7 +565,6 @@ const getStateKey = application => {
 }
 
 const httpError = (status, message) => {
-  debugger
   const err:any = new Error(message)
   err.status = status
   return err
