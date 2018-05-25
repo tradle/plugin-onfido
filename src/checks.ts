@@ -82,6 +82,7 @@ export default class Checks implements IOnfidoComponent {
       reports: reports.map(name => REPORT_TYPE_TO_ONFIDO_NAME[name])
     })
 
+    check.set({ dateChecked: Date.now() })
     await this.processCheck({
       req,
       application,

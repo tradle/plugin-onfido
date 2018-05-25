@@ -15,6 +15,7 @@
     "@tradle/build-resource": "^4.0.1",
     "@tradle/constants": "^2.3.2",
     "@tradle/merge-models": "^2.1.0",
+    "@tradle/models-onfido": "github:tradle/models-onfido",
     "@tradle/validate-model": "^7.0.0",
     "@tradle/validate-resource": "^4.0.0",
     "lodash": "^4.17.4",

@@ -121,7 +121,8 @@ export default class Onfido implements IOnfidoComponent {
     if (!application) return
 
     const { applicant, requestFor } = application
-    if (!this.getProductOptions(requestFor)) {
+    const productOpts = this.getProductOptions(requestFor)
+    if (!productOpts) {
       this.logger.debug(`ignoring product ${requestFor}`)
       return
     }
@@ -142,6 +143,10 @@ export default class Onfido implements IOnfidoComponent {
       props = nonPending
     } else {
       props = {
+        reportsOrdered: productOpts.reports.map(id => buildResource.enumValue({
+          model: onfidoModels.reportType,
+          value: id
+        })),
         application: buildResource.stub({
           models: this.models,
           model: this.models[APPLICATION],
