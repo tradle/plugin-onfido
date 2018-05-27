@@ -338,6 +338,7 @@ export default class Onfido implements IOnfidoComponent {
     })
 
     if (typeof webhook === 'string' || Buffer.isBuffer(webhook)) {
+      // @ts-ignore
       return JSON.parse(webhook)
     }
 
