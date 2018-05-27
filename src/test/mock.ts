@@ -11,6 +11,15 @@ import { Onfido, createPlugin } from '../'
 import { addLinks, parseStub } from '../utils'
 import { DEFAULT_WEBHOOK_KEY } from '../constants'
 
+const secretStore = () => {
+  const kv = keyValueStore()
+  return {
+    get: ({ key }) => kv.get(key),
+    put: ({ key, value }) => kv.put(key, value),
+    del: ({ key }) => kv.del(key),
+  }
+}
+
 const keyValueStore = () => {
   const store = {}
   return {
@@ -21,6 +30,9 @@ const keyValueStore = () => {
     },
     put: async (key, value) => {
       store[key] = value
+    },
+    del: async (key) => {
+      delete store[key]
     },
     sub: () => keyValueStore()
   }
@@ -54,7 +66,7 @@ function mockClient ({ products, ...rest }) {
     ...rest
   })
 
-  plugin.conf.put(DEFAULT_WEBHOOK_KEY, { token: 'testtoken' })
+  plugin.secrets.put({ key: DEFAULT_WEBHOOK_KEY, value: { token: 'testtoken' } })
   return plugin
 }
 
@@ -178,6 +190,7 @@ function mockBot () {
     save,
     kv: keyValueStore(),
     conf: keyValueStore(),
+    secrets: secretStore(),
     users: {
       get: async (id) => {
         throw new Error('users.get() not mocked')

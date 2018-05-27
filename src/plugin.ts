@@ -61,6 +61,9 @@ const {
 // }
 
 const RETAKE_SELFIE_MESSAGE = 'Please retake your selfie, centering your face'
+const ONFIDO_WEBHOOK_CONTEXT = {
+  provider: 'onfido'
+}
 
 export default class Onfido implements IOnfidoComponent {
   public applicants:Applicants
@@ -75,7 +78,7 @@ export default class Onfido implements IOnfidoComponent {
   public onfidoAPI: any
   public applications: any
   public apiUtils: APIUtils
-  public conf: any
+  public secrets: any
   public get models() {
     return this.bot.models
   }
@@ -107,7 +110,7 @@ export default class Onfido implements IOnfidoComponent {
     })
 
     this.bot = bot
-    this.conf = this.bot.conf.sub('onfido')
+    this.secrets = this.bot.secrets
     this.padApplicantName = padApplicantName
     this.formsToRequestCorrectionsFor = formsToRequestCorrectionsFor
     this.preCheckAddress = preCheckAddress
@@ -304,7 +307,7 @@ export default class Onfido implements IOnfidoComponent {
 
   public unregisterWebhook = async ({ url }) => {
     await this.onfidoAPI.webhooks.unregister(url)
-    await this.conf.del(this.webhookKey)
+    await this.secrets.del({ key: this.webhookKey, context: ONFIDO_WEBHOOK_CONTEXT })
   }
 
   public registerWebhook = async ({ url, events=DEFAULT_WEBHOOK_EVENTS }: {
@@ -319,12 +322,20 @@ export default class Onfido implements IOnfidoComponent {
 
     this.logger.debug(`registering webhook`, { url })
     const webhook = await this.onfidoAPI.webhooks.register({ url, events })
-    await this.conf.put(this.webhookKey, webhook)
+    await this.secrets.put({
+      key: this.webhookKey,
+      value: webhook,
+      context: ONFIDO_WEBHOOK_CONTEXT
+    })
+
     return webhook
   }
 
   public getWebhook = async () => {
-    return await this.conf.get(this.webhookKey)
+    return await this.secrets.get({
+      key: this.webhookKey,
+      context: ONFIDO_WEBHOOK_CONTEXT
+    })
   }
 
   public processWebhookEvent = async (opts) => {
