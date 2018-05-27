@@ -332,10 +332,16 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   public getWebhook = async () => {
-    return await this.secrets.get({
+    const webhook = await this.secrets.get({
       key: this.webhookKey,
       context: ONFIDO_WEBHOOK_CONTEXT
     })
+
+    if (typeof webhook === 'string' || Buffer.isBuffer(webhook)) {
+      return JSON.parse(webhook)
+    }
+
+    return webhook
   }
 
   public processWebhookEvent = async (opts) => {
