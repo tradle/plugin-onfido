@@ -320,8 +320,24 @@ export default class Onfido implements IOnfidoComponent {
       }
     })
 
-    this.logger.debug(`registering webhook`, { url })
-    const webhook = await this.onfidoAPI.webhooks.register({ url, events })
+    const existing = await this.onfidoAPI.webhooks.list()
+
+    let webhook
+    if (existing) {
+      webhook = existing.webhooks.find(w => {
+        return w.url === url && events.every(e => w.events.includes(e))
+      })
+
+      if (webhook) {
+        this.logger.debug('not registering, found existing', { id: webhook.id })
+      }
+    }
+
+    if (!webhook) {
+      this.logger.debug(`registering webhook`, { url })
+      webhook = await this.onfidoAPI.webhooks.register({ url, events })
+    }
+
     await this.secrets.put({
       key: this.webhookKey,
       value: webhook,
