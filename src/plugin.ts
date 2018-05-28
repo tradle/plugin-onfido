@@ -338,7 +338,7 @@ export default class Onfido implements IOnfidoComponent {
       webhook = await this.onfidoAPI.webhooks.register({ url, events })
     }
 
-    await this.secrets.put({
+    await this.secrets.update({
       key: this.webhookKey,
       value: webhook,
       context: ONFIDO_WEBHOOK_CONTEXT

@@ -17,6 +17,7 @@ const secretStore = () => {
     get: ({ key }) => kv.get(key),
     put: ({ key, value }) => kv.put(key, value),
     del: ({ key }) => kv.del(key),
+    update: ({ key, value }) => kv.put(key, value)
   }
 }
 
