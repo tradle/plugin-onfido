@@ -51,6 +51,7 @@ function mockClient ({ products, ...rest }) {
   const onfidoAPI = mockAPI()
   const bot = mockBot()
   const plugin = createPlugin({
+    mode: 'during',
     formsToRequestCorrectionsFor: ['tradle.onfido.Applicant', 'tradle.Selfie'],
     logger: new ConsoleLogger(),
     bot,
@@ -131,7 +132,6 @@ function mockBot () {
     const type = resource[TYPE]
     const permalink = resource._permalink
     if (!(type && permalink)) {
-      debugger
       throw new Error(`expected ${TYPE} and _permalink`)
     }
 
@@ -166,10 +166,8 @@ function mockBot () {
       const items = []
       for (let key in db) {
         let item = db[key]
-        for (let prop in EQ) {
-          if (_.isEqual(_.get(item, prop), EQ[prop])) {
-            items.push(item)
-          }
+        if (Object.keys(EQ).every(prop => _.isEqual(_.get(item, prop), EQ[prop]))) {
+          items.push(item)
         }
       }
 

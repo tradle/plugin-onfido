@@ -63,6 +63,8 @@ export type ProductOptions = {
   reports?: string[]
 }
 
+export type PluginMode = 'during' | 'after'
+
 export type PluginOpts = {
   logger: ILogger
   bot: any
@@ -74,6 +76,7 @@ export type PluginOpts = {
   padApplicantName?: boolean
   webhookKey?: string
   preCheckAddress?: boolean
+  mode?: PluginMode
 }
 
 export interface IOnfidoComponent {

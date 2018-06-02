@@ -92,12 +92,13 @@ export default class Applicants implements IOnfidoComponent {
 
     const applicant = parseStub(application.applicant).permalink
     // to ensure uniqueness during testing
-    if (this.padApplicantName) {
-      props.last_name += applicant.slice(0, 4)
-    }
 
     if (check.get('onfidoApplicant')) {
       return await this.update({ req, application, check, props })
+    }
+
+    if (this.padApplicantName) {
+      props.last_name += applicant.slice(0, 4)
     }
 
     this.logger.debug('creating applicant', {

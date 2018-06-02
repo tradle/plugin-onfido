@@ -11,6 +11,7 @@ import {
   ILogger,
   IOnfidoComponent,
   PluginOpts,
+  PluginMode,
   IncomingFormReq,
   OnfidoState,
   ProductOptions,
@@ -79,12 +80,14 @@ export default class Onfido implements IOnfidoComponent {
   public applications: any
   public apiUtils: APIUtils
   public secrets: any
+  public mode: PluginMode
   public get models() {
     return this.bot.models
   }
 
   constructor (opts: PluginOpts) {
     const {
+      mode='after',
       logger,
       onfidoAPI,
       bot,
@@ -97,6 +100,7 @@ export default class Onfido implements IOnfidoComponent {
       // onFinished
     } = opts
 
+    this.mode = mode
     this.logger = logger
     this.onfidoAPI = onfidoAPI
     this.applications = applications
@@ -121,36 +125,66 @@ export default class Onfido implements IOnfidoComponent {
     this.checks = new Checks(this)
   }
 
-  public ['onmessage:tradle.Form'] = async (req):Promise<any|void> => {
+  public onFormsCollected = async ({ req }):Promise<void> => {
+    if (this.mode !== 'after') return
+
     const { payload, application } = req
     if (!application) return
 
     const { applicant, requestFor } = application
-    if (this.shouldIgnoreForm({ product: requestFor, form: payload })) {
-      return
-    }
+    const productOpts = this.getProductOptions(requestFor)
+    if (!productOpts) return
 
-    const form = _.cloneDeep(payload)
-    const resolveEmbeds = this.bot.resolveEmbeds(form)
     const checks = await this.checks.listWithApplication(application._permalink)
     const pending = checks.find(utils.isPendingCheck)
 
     // nothing can be done until a check completes
     if (pending) {
-      this.logger.debug(`check is already pending, ignoring form`, {
-        form: form[TYPE],
-        application: application._permalink
-      })
-
+      this.logger.debug(`check is already pending, exiting`)
       return
     }
 
+    // let relevant = application.forms
+    //   .map(appSub => appSub.submission)
+    //   .map(parseStub)
+    //   .filter(({ type }) => !this.shouldIgnoreForm({ product: requestFor, form: type }))
+
+    // relevant = _.uniqBy(relevant, ({ permalink }) => permalink)
+
+    // const forms = await Promise.all(relevant.map(form => this.bot.getResource(form)))
+    const check = this.draftCheck({ application, checks })
+    await this.updateCheck({ req, application, check })
+  }
+
+  private updateCheck = async ({ req, application, check, form }: {
+    req: any
+    application: any
+    check: Resource
+    form?: any
+  }) => {
+    const onfidoApplicant = check.get('onfidoApplicant')
+    const updatedApplicant = await this.applicants.createOrUpdate({ req, application, check, form })
+    if (!updatedApplicant) return
+
+    const uploadedAttachments = await this.uploadAttachments({ req, application, check, form })
+    if (!uploadedAttachments) return
+
+    if (this.hasRequiredAttachments({ application, check })) {
+      await this.createOnfidoCheck({ req, application, check })
+    }
+
+    if (check.isModified()) {
+      await check.signAndSave()
+    }
+  }
+
+  private draftCheck = ({ application, checks }) => {
     let props
     const nonPending = checks.find(utils.isVirginCheck)
     if (nonPending) {
       props = nonPending
     } else {
-      const { reports } = this.getProductOptions(requestFor)
+      const { reports } = this.getProductOptions(application.requestFor)
       props = {
         reportsOrdered: reports.map(id => buildResource.enumValue({
           model: onfidoModels.reportType,
@@ -161,7 +195,7 @@ export default class Onfido implements IOnfidoComponent {
           model: models[APPLICATION],
           resource: application
         }),
-        applicant
+        applicant: application.applicant
       }
 
       if (checks.length) {
@@ -180,16 +214,41 @@ export default class Onfido implements IOnfidoComponent {
       }
     }
 
-    const check = this.bot.draft({
+    return this.bot.draft({
       type: onfidoModels.check.id,
       resource: props
     })
+  }
 
+  public ['onmessage:tradle.Form'] = async (req):Promise<any|void> => {
+    if (this.mode !== 'during') return
+
+    const { payload, application } = req
+    if (!application) return
+
+    const { applicant, requestFor } = application
+    if (this.shouldIgnoreForm({ product: requestFor, form: payload[TYPE] })) {
+      return
+    }
+
+    const form = _.cloneDeep(payload)
+    const resolveEmbeds = this.bot.resolveEmbeds(form)
+    const checks = await this.checks.listWithApplication(application._permalink)
+    const pending = checks.find(utils.isPendingCheck)
+
+    // nothing can be done until a check completes
+    if (pending) {
+      this.logger.debug(`check is already pending, ignoring form`, {
+        form: form[TYPE],
+        application: application._permalink
+      })
+
+      return
+    }
+
+    const check = this.draftCheck({ application, checks })
     await resolveEmbeds
     await this.handleForm({ req, application, check, form })
-    if (check.isModified()) {
-      await check.signAndSave()
-    }
   }
 
   private ensureProductSupported = ({ application }: {
@@ -464,21 +523,7 @@ export default class Onfido implements IOnfidoComponent {
       return
     }
 
-    const onfidoApplicant = check.get('onfidoApplicant')
-    if (onfidoApplicant) {
-      const ok = await this.updateApplicant({ req, application, check, form })
-      if (!ok) return
-    } else {
-      const ok = await this.applicants.createOrUpdate({ req, application, check, form })
-      if (!ok) return
-    }
-
-    const ok = await this.uploadAttachments({ req, application, check, form })
-    if (!ok) return
-
-    if (this.hasRequiredAttachments({ application, check })) {
-      await this.createOnfidoCheck({ req, application, check })
-    }
+    await this.updateCheck({ req, application, check, form })
   }
 
   // private execWithErrorHandler = async (fn, opts):Promise<boolean> => {
@@ -558,34 +603,28 @@ export default class Onfido implements IOnfidoComponent {
     return required.every(prop => check.get(prop))
   }
 
-  private shouldIgnoreForm = ({ product, form }) => {
-    const type = form[TYPE]
+  private shouldIgnoreForm = ({ product, form }: {
+    product: string
+    form: string
+  }) => {
     const productOpts = this.getProductOptions(product)
     if (!productOpts) {
-      this.logger.debug(`ignoring form for product`, {
-        product,
-        form: type,
-      })
-
+      // this.logger.debug(`ignoring form for product`, { product, form })
       return true
     }
 
-    if (!PROP_MAPS[type]) {
-      this.logger.debug(`ignoring form with no extractable data`, {
-        product,
-        form: type
-      })
-
+    if (!PROP_MAPS[form]) {
+      // this.logger.debug(`ignoring form with no extractable data`, { product, form })
       return true
     }
 
     if (!utils.isAddressRequired(productOpts.reports)) {
-      const extractor = Extractor.byForm[type] || {}
+      const extractor = Extractor.byForm[form] || {}
       if (_.isEqual(Object.keys(extractor), ['address'])) {
-        this.logger.debug('address-related reports disabled, ignoring address-related form', {
-          product,
-          form: type
-        })
+        // this.logger.debug('address-related reports disabled, ignoring address-related form', {
+        //   product,
+        //   form
+        // })
 
         return true
       }

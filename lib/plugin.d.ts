@@ -1,6 +1,6 @@
 import Applicants from './applicants';
 import Checks from './checks';
-import { ILogger, IOnfidoComponent, PluginOpts, OnfidoState, ProductOptions, OnfidoResult, Resource } from './types';
+import { ILogger, IOnfidoComponent, PluginOpts, PluginMode, OnfidoState, ProductOptions, OnfidoResult, Resource } from './types';
 import APIUtils from './api-utils';
 export default class Onfido implements IOnfidoComponent {
     applicants: Applicants;
@@ -16,8 +16,14 @@ export default class Onfido implements IOnfidoComponent {
     applications: any;
     apiUtils: APIUtils;
     secrets: any;
+    mode: PluginMode;
     readonly models: any;
     constructor(opts: PluginOpts);
+    onFormsCollected: ({ req }: {
+        req: any;
+    }) => Promise<void>;
+    private updateCheck;
+    private draftCheck;
     ['onmessage:tradle.Form']: (req: any) => Promise<any>;
     private ensureProductSupported;
     getProductOptions: (productModelId: string) => ProductOptions;

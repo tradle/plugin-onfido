@@ -167,7 +167,7 @@ test('common case', loudAsync(async (t) => {
     })
   })
 
-  const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create').callsFake(props => {
+  const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create').callsFake(async props => {
     t.same(props, {
       "first_name": "MOOG",
       "last_name": "SONI",
@@ -194,7 +194,7 @@ test('common case', loudAsync(async (t) => {
     // })
 
     // return Promise.reject(err)
-    return Promise.resolve(fixtures.applicants[0])
+    return fixtures.applicants[0]
   })
 
   let vIdx = 0
@@ -362,22 +362,23 @@ test('plugin methods', loudAsync(async (t) => {
     pendingCheck
   } = setup()
 
+  const moog = {
+    first_name: 'MOOG',
+    last_name: 'SONI',
+    dob: '1981-04-03',
+    addresses: [ {
+      country: 'GBR',
+      building_number: '96',
+      street: 'Thornfield Rd',
+      town: 'Middlesbrough',
+      postcode: 'TS5 5BY'
+    } ]
+  }
+
   const createApplicantStub = sinon.stub(onfido.onfidoAPI.applicants, 'create')
     .callsFake(async (props) => {
-      t.same(props, {
-        first_name: 'MOOG',
-        last_name: 'SONI',
-        dob: '1981-04-03',
-        addresses: [ {
-          country: 'GBR',
-          building_number: '96',
-          street: 'Thornfield Rd',
-          town: 'Middlesbrough',
-          postcode: 'TS5 5BY'
-        } ]
-      })
-
-      return fixtures.applicants[0]
+      t.same(props, moog)
+      return { ...fixtures.applicants[0], ...moog }
     })
 
   const updateApplicantSpy = sinon.spy(onfido.onfidoAPI.applicants, 'update')
