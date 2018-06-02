@@ -152,6 +152,11 @@ export default class Onfido implements IOnfidoComponent {
     // relevant = _.uniqBy(relevant, ({ permalink }) => permalink)
 
     // const forms = await Promise.all(relevant.map(form => this.bot.getResource(form)))
+    this.bot.sendSimpleMessage({
+      to: req.user,
+      message: 'Give me a moment...'
+    })
+
     const check = this.draftCheck({ application, checks })
     await this.updateCheck({ req, application, check })
   }
@@ -573,7 +578,7 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   private getForm = async ({ type, application, form, req }) => {
-    if (type === form[TYPE]) return form
+    if (form && type === form[TYPE]) return form
 
     const parsedStub = getLatestFormByType(application, type)
     if (parsedStub) {
