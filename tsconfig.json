@@ -2,11 +2,11 @@
   "compilerOptions": {
     "declaration": true,
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2017",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "lib": [
-      "esnext"
+      "es2017"
     ],
     "sourceMap": true,
     "outDir": "lib",
