@@ -21,6 +21,7 @@ const APPLICANT_PROPERTY_SETS = ['name', 'dob', 'address']
 const APPLICANT_PROPERTY_SETS_MIN = ['name', 'dob']
 const createFilterForType = query => ({ type }) => type === query
 const { sanitize } = validateResource.utils
+const ONE_OR_MORE = 'One or more of the following checks'
 
 export { sanitize }
 
@@ -293,4 +294,27 @@ export const getStatus = (onfidoResult: string) => {
   if (onfidoResult === 'consider') return 'fail'
 
   return 'error'
+}
+
+export const getMessageForReports = (reports: string[], status?: string) => {
+  const enumVals = onfidoModels.reportType.enum
+  const titles = reports.map(id => enumVals.find(val => val.id === id).title)
+
+  if (status) status = status.toLowerCase()
+
+  const checks = `${titles.join(', ')}`
+  const checkPhrase = reports.length > 1 ? ONE_OR_MORE : 'Check'
+  if (status === 'pass') {
+    return `${checkPhrase} PASSED: ${checks}`
+  }
+
+  if (status === 'fail') {
+    return `${checkPhrase} FAILED: ${checks}`
+  }
+
+  if (status === 'error') {
+    return `${checkPhrase} hit an ERROR: ${checks}`
+  }
+
+  return `${checkPhrase} are still pending: ${checks}`
 }

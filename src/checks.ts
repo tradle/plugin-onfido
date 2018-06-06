@@ -15,6 +15,8 @@ import {
   parseReportURL,
   addLinks,
   getStatus,
+  getMessageForReports,
+  getEnumValueId,
 } from './utils'
 
 import { toOnfido, fromOnfido } from './enum-value-map'
@@ -138,7 +140,6 @@ export default class Checks implements IOnfidoComponent {
     check: Resource,
     onfidoCheck: any
   }) => {
-
     onfidoCheck = this.apiUtils.sanitize(onfidoCheck)
 
     if (!(application && check && onfidoCheck)) {
@@ -157,6 +158,9 @@ export default class Checks implements IOnfidoComponent {
     if (result) {
       newCheckProps.onfidoResult = result
       newCheckProps.status = getStatus(result)
+
+      const reportsOrdered = check.get('reportsOrdered').map(getEnumValueId)
+      newCheckProps.message = getMessageForReports(reportsOrdered, newCheckProps.status)
     }
 
     check.set(newCheckProps)

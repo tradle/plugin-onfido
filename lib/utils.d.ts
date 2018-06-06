@@ -51,3 +51,4 @@ export declare const validateProductOptions: (opts: ProductOptions) => void;
 export declare const getFormStubs: (application: any) => any;
 export declare const isAddressRequired: (reports: string[]) => boolean;
 export declare const getStatus: (onfidoResult: string) => "pass" | "fail" | "error";
+export declare const getMessageForReports: (reports: string[], status?: string) => string;

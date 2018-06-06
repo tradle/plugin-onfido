@@ -191,10 +191,8 @@ export default class Onfido implements IOnfidoComponent {
     } else {
       const { reports } = this.getProductOptions(application.requestFor)
       props = {
-        reportsOrdered: reports.map(id => buildResource.enumValue({
-          model: onfidoModels.reportType,
-          value: id
-        })),
+        message: utils.getMessageForReports(reports),
+        reportsOrdered: getReportsOrderedEnumVals(reports),
         application: buildResource.stub({
           models,
           model: models[APPLICATION],
@@ -364,6 +362,10 @@ export default class Onfido implements IOnfidoComponent {
 
     if (!reports) {
       ({ reports } = this.getProductOptions(application.requestFor))
+    }
+
+    if (!check.get('reportsOrdered')) {
+      check.set('reportsOrdered', getReportsOrderedEnumVals(reports))
     }
 
     return await this.checks.create({ req, application, check, reports })
@@ -647,3 +649,8 @@ const httpError = (status, message) => {
   err.status = status
   return err
 }
+
+const getReportsOrderedEnumVals = (reports: string[]) => reports.map(id => buildResource.enumValue({
+  model: onfidoModels.reportType,
+  value: id
+}))
