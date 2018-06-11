@@ -584,7 +584,11 @@ export default class Onfido implements IOnfidoComponent {
   }
 
   private getForm = async ({ type, application, form, req }) => {
-    if (form && type === form[TYPE]) return form
+    if (form) {
+      if (type === form[TYPE]) return form
+    } else if (req && req.payload && req.payload[TYPE] === type) {
+      return req.payload
+    }
 
     const parsedStub = getLatestFormByType(application, type)
     if (parsedStub) {
