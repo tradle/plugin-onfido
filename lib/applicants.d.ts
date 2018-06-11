@@ -19,7 +19,7 @@ export default class Applicants implements IOnfidoComponent {
         req?: any;
         form?: any;
         props?: any;
-    }) => Promise<boolean>;
+    }) => Promise<any>;
     uploadSelfie: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
     uploadPhotoID: ({ req, application, check, form }: OnfidoState) => Promise<boolean>;
 }

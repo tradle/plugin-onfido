@@ -91,32 +91,38 @@ export default class Applicants implements IOnfidoComponent {
     }
 
     const applicant = parseStub(application.applicant).permalink
-    // to ensure uniqueness during testing
-
-    if (check.get('onfidoApplicant')) {
-      return await this.update({ req, application, check, props })
-    }
 
     if (this.padApplicantName) {
+      // to ensure uniqueness during testing
       props.last_name += applicant.slice(0, 4)
     }
 
-    this.logger.debug('creating applicant', {
+    const isUpdate = !!check.get('onfidoApplicant')
+    const verb = isUpdate ? 'updating' : 'creating'
+    this.logger.debug(`${verb} applicant`, {
       application: application._permalink
     })
 
+    let onfidoApplicant
     try {
-      const onfidoApplicant = await this.onfidoAPI.applicants.create(props)
+      if (isUpdate) {
+        onfidoApplicant = await this.update({ req, application, check, props })
+      } else {
+        onfidoApplicant = await this.onfidoAPI.applicants.create(props)
+      }
+    } catch (err) {
+      this.logger.error(`failed to create or update applicant ${applicant}`, err)
+      throw err
+    }
+
+    if (onfidoApplicant) {
       check.set({
         onfidoApplicant: this.apiUtils.sanitize(onfidoApplicant),
         applicantDetails: parsedStubs.map(stubFromParsedStub)
       })
-
-      return true
-    } catch (err) {
-      this.logger.error(`failed to create applicant ${applicant}`, err)
-      throw err
     }
+
+    return true
   }
 
   public update = async ({ req, application, check, form, props }: {
@@ -125,7 +131,7 @@ export default class Applicants implements IOnfidoComponent {
     req?: any
     form?: any
     props?: any
-  }):Promise<boolean> => {
+  }):Promise<any|void> => {
     if (!props) {
       if (!form) {
         throw new Error('expected "form" or "props')
@@ -141,13 +147,9 @@ export default class Applicants implements IOnfidoComponent {
           application: application._permalink
         })
 
-        await this.onfidoAPI.applicants.update(current.id, props)
+        return await this.onfidoAPI.applicants.update(current.id, props)
       }
-
-      return true
     }
-
-    return false
   }
 
   public uploadSelfie = async ({ req, application, check, form }: OnfidoState):Promise<boolean> => {
