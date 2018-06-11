@@ -158,7 +158,11 @@ export default class Onfido implements IOnfidoComponent {
     })
 
     const check = this.draftCheck({ application, checks })
-    await this.updateCheck({ req, application, check })
+    try {
+      await this.updateCheck({ req, application, check })
+    } catch (error) {
+      this.handleOnfidoError({ req, error })
+    }
   }
 
   private updateCheck = async ({ req, application, check, form }: {

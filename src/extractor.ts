@@ -6,7 +6,8 @@ import {
   NAME,
   APPLICANT,
   ADDRESS,
-  PG_PERSONAL_DETAILS
+  PG_PERSONAL_DETAILS,
+  PHOTO_ID,
 } from './constants'
 
 import {
@@ -46,7 +47,7 @@ const getAddress:(form:any) => OnfidoAddress|void = createSubsetGetter(ADDRESS_P
 const getDateOfBirth = (form:any):string|void => {
   let date
   const type = form[TYPE]
-  if (type === APPLICANT || type === PG_PERSONAL_DETAILS) {
+  if (type === APPLICANT || type === PG_PERSONAL_DETAILS || type === PHOTO_ID) {
     date = form.dateOfBirth
   }
 
@@ -68,7 +69,8 @@ export const byProp = {
   name: {
     [NAME]: toOnfidoName,
     [APPLICANT]: toOnfidoName,
-    [PG_PERSONAL_DETAILS]: toOnfidoName
+    [PG_PERSONAL_DETAILS]: toOnfidoName,
+    [PHOTO_ID]: toOnfidoName
   },
   address: {
     [APPLICANT]: getAddress,
@@ -76,7 +78,8 @@ export const byProp = {
   },
   dob: {
     [APPLICANT]: getDateOfBirth,
-    [PG_PERSONAL_DETAILS]: getDateOfBirth
+    [PG_PERSONAL_DETAILS]: getDateOfBirth,
+    [PHOTO_ID]: getDateOfBirth
   }
 }
 

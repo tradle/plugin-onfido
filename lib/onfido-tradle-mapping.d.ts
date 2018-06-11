@@ -50,6 +50,15 @@ declare const byForm: {
         document: {
             tradle: string;
         };
+        first_name: {
+            tradle: string;
+        };
+        last_name: {
+            tradle: string;
+        };
+        dob: {
+            tradle: string;
+        };
     };
     [EMAIL_ADDRESS]: {
         email: {
