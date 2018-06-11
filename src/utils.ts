@@ -305,7 +305,7 @@ export const getMessageForReports = (reports: string[], status?: string) => {
   const checks = `${titles.join(', ')}`
   const checkPhrase = reports.length > 1 ? ONE_OR_MORE : 'Check'
   if (status === 'pass') {
-    return `${checkPhrase} PASSED: ${checks}`
+    return `Checks PASSED: ${checks}`
   }
 
   if (status === 'fail') {
