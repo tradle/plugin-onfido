@@ -1,3 +1,5 @@
+import { models } from '@tradle/models'
+import validateResource from '@tradle/validate-resource'
 import {
   ADDRESS,
   APPLICANT,
@@ -8,23 +10,10 @@ import {
   PG_PERSONAL_DETAILS
 } from './constants'
 
-const getCountryCode = (country) => {
-  switch (country.title.trim().toLowerCase()) {
-    case 'united kingdom':
-      return 'GBR'
-    case 'new zealand':
-      return 'NZL'
-  }
-}
+const { parseEnumValue } = validateResource.utils
+const countryModel = models['tradle.Country']
 
-const countryTransform = country => {
-  const countryCode = getCountryCode(country)
-  if (!countryCode) {
-    throw new Error(`don't know 3-letter code for "${country.title}"`)
-  }
-
-  return countryCode
-}
+const getCountryCCA3Code = value => parseEnumValue({ model: countryModel, value }).cca3
 
 const pgPersonalDetailsMapping = {
   first_name: {
@@ -77,7 +66,7 @@ const applicantFormMapping = {
   },
   country: {
     tradle: 'country',
-    transform: countryTransform
+    transform: getCountryCCA3Code
   }
 }
 

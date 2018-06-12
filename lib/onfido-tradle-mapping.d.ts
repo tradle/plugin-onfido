@@ -38,7 +38,7 @@ declare const byForm: {
         };
         country: {
             tradle: string;
-            transform: (country: any) => "GBR" | "NZL";
+            transform: (value: any) => any;
         };
     };
     [SELFIE]: {
