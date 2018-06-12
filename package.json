@@ -6,7 +6,7 @@
   "scripts": {
     "test": "node lib/test",
     "precommit": "npm run copy-static-assets && tsc && npm test",
-    "copy-static-assets": "cp src/test/fixtures/*.json lib/test/fixtures/"
+    "copy-static-assets": "cp src/test/fixtures/*.json lib/test/fixtures/ && cp src/*.json lib/"
   },
   "keywords": [],
   "author": "Mark Vayngrib <mark@tradle.io>",

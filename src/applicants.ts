@@ -62,11 +62,15 @@ export default class Applicants implements IOnfidoComponent {
       throw new Error('expected "check"')
     }
 
+    const { models } = this.bot
     const productOptions = this.main.getProductOptions(application.requestFor)
+    const propertyMap = this.main.getPropertyMap(application.requestFor)
     const fStub = form && this.apiUtils.stub(form)
     const parsedStubs = getFormsToCreateApplicant({
+      models,
       forms: getFormStubs(application).concat(fStub ? parseStub(fStub) : []),
-      reports: productOptions.reports
+      reports: productOptions.reports,
+      propertyMap
     })
 
     if (!parsedStubs) {
@@ -79,7 +83,7 @@ export default class Applicants implements IOnfidoComponent {
 
     const parsedStubsAndForms = parsedStubs.slice()
     const forms = await Promise.all(parsedStubsAndForms.map(item => this.apiUtils.getResource(item, req)))
-    const props = getApplicantProps(forms)
+    const props = getApplicantProps({ models, forms, propertyMap })
     const { first_name, last_name, dob, addresses=[] } = props
     const needAddress = isAddressRequired(productOptions.reports)
     if (!(first_name && last_name && dob && (addresses.length || !needAddress))) {
@@ -137,7 +141,11 @@ export default class Applicants implements IOnfidoComponent {
         throw new Error('expected "form" or "props')
       }
 
-      props = getApplicantProps([form])
+      props = getApplicantProps({
+        models: this.bot.models,
+        forms: [form],
+        propertyMap: this.main.getPropertyMap(application.requestFor)
+      })
     }
 
     if (props) {

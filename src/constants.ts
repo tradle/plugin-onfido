@@ -28,6 +28,14 @@ const DEFAULT_WEBHOOK_EVENTS = [
 
 const REPORTS = onfidoModels.reportType.enum.map(({ id }) => id)
 const DEFAULT_REPORTS = REPORTS.slice()
+const ADDRESS_PROPS = ['building_number', 'street', 'town', 'postcode', 'country']
+const NAME_PROPS = ['first_name', 'last_name']
+const DOB_PROPS = ['dob']
+const PROPERTY_SETS = {
+  name: NAME_PROPS,
+  dob: DOB_PROPS,
+  address: ADDRESS_PROPS
+}
 
 export {
   // models
@@ -47,5 +55,6 @@ export {
   ONFIDO_WEBHOOK_EVENTS,
   DEFAULT_WEBHOOK_EVENTS,
   REPORTS,
-  DEFAULT_REPORTS
+  DEFAULT_REPORTS,
+  PROPERTY_SETS
 }

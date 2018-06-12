@@ -58,9 +58,19 @@ export interface ILogger {
   error: Function
 }
 
+export type FieldSource = {
+  source: string
+  property: string|string[]
+}
+
+export type PropertyMap = {
+  [fieldName: string]: FieldSource[]
+}
+
 export type ProductOptions = {
   product: string,
   reports?: string[]
+  propertyMap?: PropertyMap
 }
 
 export type PluginMode = 'during' | 'after'

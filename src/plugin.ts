@@ -5,8 +5,6 @@ import models from './models'
 import onfidoModels from './onfido-models'
 import Applicants from './applicants'
 import Checks from './checks'
-import PROP_MAPS from './onfido-tradle-mapping'
-import * as Extractor from './extractor'
 import {
   ILogger,
   IOnfidoComponent,
@@ -17,7 +15,8 @@ import {
   ProductOptions,
   OnfidoResult,
   Check,
-  Resource
+  Resource,
+  PropertyMap
 } from './types'
 
 import APIUtils from './api-utils'
@@ -31,14 +30,16 @@ import {
   DEFAULT_WEBHOOK_EVENTS,
   APPLICATION,
   REPORTS,
-  DEFAULT_REPORTS
+  DEFAULT_REPORTS,
+  PROPERTY_SETS
 } from './constants'
 
 import Errors from './errors'
 import ONFIDO_ERR_MESSAGES from './onfido-error-messages'
 import ONFIDO_MAPPING from './onfido-tradle-mapping'
-
 import * as utils from './utils'
+
+const DEFAULT_PROPERTY_MAP = require('./default-property-map')
 
 const {
   getSelfie,
@@ -49,7 +50,6 @@ const {
   getOnfidoCheckIdKey,
   parseStub,
   getLatestFormByType,
-  isApplicantInfoForm,
   addLinks,
   validateProductOptions,
   getFormStubs,
@@ -109,7 +109,8 @@ export default class Onfido implements IOnfidoComponent {
     this.products = products.map(opts => {
       return {
         ...opts,
-        reports: opts.reports || DEFAULT_REPORTS
+        reports: opts.reports || DEFAULT_REPORTS,
+        propertyMap: opts.propertyMap || DEFAULT_PROPERTY_MAP
       }
     })
 
@@ -269,6 +270,10 @@ export default class Onfido implements IOnfidoComponent {
 
   public getProductOptions = (productModelId:string):ProductOptions => {
     return this.products.find(({ product }) => product === productModelId)
+  }
+
+  public getPropertyMap = (productModelId:string):PropertyMap => {
+    return this.products.find(({ product }) => product === productModelId).propertyMap
   }
 
   public handleOnfidoError = async ({ req, error }) => {
@@ -628,14 +633,25 @@ export default class Onfido implements IOnfidoComponent {
       return true
     }
 
-    if (!PROP_MAPS[form]) {
+    const propertyMap = this.getPropertyMap(product)
+    const hasMapping = Object.keys(propertyMap)
+      .find(fieldName => propertyMap[fieldName].some(({ source }) => source === form))
+
+    if (!hasMapping) {
       // this.logger.debug(`ignoring form with no extractable data`, { product, form })
       return true
     }
 
     if (!utils.isAddressRequired(productOpts.reports)) {
-      const extractor = Extractor.byForm[form] || {}
-      if (_.isEqual(Object.keys(extractor), ['address'])) {
+      const relevant = Object.keys(PROPERTY_SETS).filter(name => {
+        return PROPERTY_SETS[name].some(fieldName => utils.canExtractFromFormType({
+          formType: form,
+          fieldName,
+          propertyMap
+        }))
+      })
+
+      if (_.isEqual(relevant, ['address'])) {
         // this.logger.debug('address-related reports disabled, ignoring address-related form', {
         //   product,
         //   form

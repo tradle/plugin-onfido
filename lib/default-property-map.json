@@ -1,0 +1,53 @@
+{
+  "first_name": [
+    { "source": "tradle.onfido.Applicant", "property": "givenName" },
+    { "source": "tradle.pg.PersonalDetails", "property": "firstName" },
+    { "source": "tradle.Name", "property": "firstName" },
+    { "source": "tradle.PhotoID", "property": "firstName" }
+  ],
+  "last_name": [
+    { "source": "tradle.onfido.Applicant", "property": "surname" },
+    { "source": "tradle.pg.PersonalDetails", "property": "lastName" },
+    { "source": "tradle.Name", "property": "lastName" },
+    { "source": "tradle.PhotoID", "property": "lastName" }
+  ],
+  "dob": [
+    { "source": "tradle.onfido.Applicant", "property": "dateOfBirth" },
+    { "source": "tradle.pg.PersonalDetails", "property": "dateOfBirth" },
+    { "source": "tradle.PhotoID", "property": "dateOfBirth" }
+  ],
+  "country": [
+    { "source": "tradle.onfido.Applicant", "property": ["country", "cca3"] },
+    { "source": "tradle.PhotoID", "property": ["country", "cca3"] }
+  ],
+  "building_number": [
+    { "source": "tradle.onfido.Applicant", "property": "buildingNumber" }
+  ],
+  "building_number": [
+    { "source": "tradle.onfido.Applicant", "property": "buildingNumber" }
+  ],
+  "flat_number": [
+    { "source": "tradle.onfido.Applicant", "property": "flatNumber" }
+  ],
+  "street": [
+    { "source": "tradle.onfido.Applicant", "property": "street" }
+  ],
+  "sub_street": [
+    { "source": "tradle.onfido.Applicant", "property": "subStreet" }
+  ],
+  "town": [
+    { "source": "tradle.onfido.Applicant", "property": "town" }
+  ],
+  "postcode": [
+    { "source": "tradle.onfido.Applicant", "property": "postcode" }
+  ],
+  "document": [
+    { "source": "tradle.PhotoID", "property": "scan" }
+  ],
+  "email": [
+    { "source": "tradle.EmailAddress", "property": "email" }
+  ],
+  "face_detection": [
+    { "source": "tradle.Selfie", "property": "selfie" }
+  ]
+}

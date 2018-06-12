@@ -16,12 +16,28 @@ export declare const parseCheckURL: (url: any) => {
     checkId: any;
 };
 export declare const getOnfidoCheckIdKey: (checkId: any) => string;
-export declare const getFormsToCreateApplicant: ({ forms, reports }: {
+export declare const canExtractFromFormType: ({ formType, fieldName, propertyMap }: {
+    formType: any;
+    fieldName: any;
+    propertyMap: any;
+}) => any;
+export declare const extractFieldFromForm: ({ models, form, fieldName, propertyMap }: {
+    models: any;
+    form: any;
+    fieldName: any;
+    propertyMap: any;
+}) => any;
+export declare const getFormsToCreateApplicant: ({ models, forms, reports, propertyMap }: {
+    models: any;
     forms: any;
     reports: any;
+    propertyMap: any;
 }) => any;
-export declare const isApplicantInfoForm: (type: any) => boolean;
-export declare const getApplicantProps: (forms: any) => ApplicantProps;
+export declare const getApplicantProps: ({ models, forms, propertyMap }: {
+    models: any;
+    forms: any;
+    propertyMap: any;
+}) => ApplicantProps;
 export declare const normalizeDate: (date: any) => string;
 export declare const toYYYY_MM_DD_UTC: (date: any, separator: any) => string;
 export declare const find: (arr: any, filter: any) => any;

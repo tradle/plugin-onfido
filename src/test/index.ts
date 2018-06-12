@@ -57,7 +57,11 @@ const setup = () => {
   const onfido = mock.client({
     products: [{
       product: TEST_PRODUCT.id,
-      reports: REPORTS.slice()
+      reports: REPORTS.slice(),
+      // propertyMap: {
+      //   ...DEFAULT_PROPERTY_MAP,
+      //   first_name:
+      // }
     }]
   })
 

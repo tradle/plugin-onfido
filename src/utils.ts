@@ -3,6 +3,7 @@ import _ = require('lodash')
 import { TYPE } from '@tradle/constants'
 import buildResource = require('@tradle/build-resource')
 import validateResource = require('@tradle/validate-resource')
+import validateModel = require('@tradle/validate-model')
 import onfidoModels from './onfido-models'
 import models from './models'
 import { ApplicantProps, ProductOptions } from './types'
@@ -11,16 +12,16 @@ import {
   SELFIE,
   PHOTO_ID,
   VERIFICATION,
-  REPORTS
+  REPORTS,
+  PROPERTY_SETS
 } from './constants'
-
-import * as Extractor from './extractor'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 const APPLICANT_PROPERTY_SETS = ['name', 'dob', 'address']
 const APPLICANT_PROPERTY_SETS_MIN = ['name', 'dob']
 const createFilterForType = query => ({ type }) => type === query
-const { sanitize } = validateResource.utils
+const { sanitize, parseEnumValue } = validateResource.utils
+const { getRef } = validateModel.utils
 const ONE_OR_MORE = 'One or more of the following checks'
 
 export { sanitize }
@@ -65,15 +66,57 @@ export const getOnfidoCheckIdKey = checkId => {
   return `onfido_check_${checkId}`
 }
 
-export const getFormsToCreateApplicant = ({ forms, reports }) => {
+export const canExtractFromFormType = ({ formType, fieldName, propertyMap }) => {
+  const sources = propertyMap[fieldName]
+  if (sources) {
+    return sources.some(({ source }) => source === formType)
+  }
+}
+
+export const extractFieldFromForm = ({ models, form, fieldName, propertyMap }) => {
+  let sources = propertyMap[fieldName]
+  if (!sources) return
+
+  sources = sources.filter(({ source, property }) => {
+    if (source !== form[TYPE]) return
+
+    const topProp = typeof property === 'string' ? property : property[0]
+    return form[topProp] != null
+  })
+
+  return find(sources, ({ property }) => {
+    if (typeof property === 'string' || property.length === 1) return _.get(form, property)
+
+    const model = models[form[TYPE]]
+    const [propName, enumPropName] = property
+    const propInfo = model.properties[propName]
+    const ref = getRef(propInfo)
+    if (ref) {
+      const propModel = models[ref]
+      if (propModel.subClassOf === 'tradle.Enum') {
+        const enumVal = parseEnumValue({ model: propModel, value: form[propName] })
+        return enumVal[enumPropName]
+      }
+    }
+
+    return _.get(form, property)
+  })
+}
+
+export const getFormsToCreateApplicant = ({ models, forms, reports, propertyMap }) => {
   const parsed = forms
     .slice()
     // .sort(sortDescendingByDate)
     .map(parseStub)
 
   const propSets = reports.includes('identity') ? APPLICANT_PROPERTY_SETS : APPLICANT_PROPERTY_SETS_MIN
-  const required = propSets.map(field => {
-    return parsed.find(({ type }) => Extractor.canExtract(field, type))
+  const required = _.flatMap(propSets, setName => {
+    const fields = PROPERTY_SETS[setName]
+    const sources = fields.map(fieldName => {
+      return parsed.find(({ type }) => canExtractFromFormType({ formType: type, fieldName, propertyMap }))
+    })
+
+    if (sources.every(_.identity)) return sources
   })
 
   if (required.every(result => result)) {
@@ -81,24 +124,24 @@ export const getFormsToCreateApplicant = ({ forms, reports }) => {
   }
 }
 
-export const isApplicantInfoForm = type => Extractor.hasForm(type)
-export const getApplicantProps = (forms):ApplicantProps => {
-  const {
-    name,
-    address,
-    dob
-  }:any = APPLICANT_PROPERTY_SETS.reduce((fields, field) => {
-    fields[field] = find(forms, form => {
-      return Extractor.extract(field, form[TYPE], form)
-    })
+export const getApplicantProps = ({ models, forms, propertyMap }):ApplicantProps => {
+  const sets:any = APPLICANT_PROPERTY_SETS.reduce((sets, setName) => {
+    sets[setName] = PROPERTY_SETS[setName].reduce((fields, fieldName) => {
+      const val = find(forms, form => extractFieldFromForm({ models, fieldName, form, propertyMap }))
+      if (val != null) {
+        fields[fieldName] = val
+      }
 
-    return fields
+      return fields
+    }, {})
+
+    return sets
   }, {})
 
   const props:ApplicantProps = {}
-  if (name) Object.assign(props, name)
-  if (dob) props.dob = dob
-  if (address) props.addresses = [address]
+  if (sets.name) Object.assign(props, sets.name)
+  if (sets.dob) props.dob = normalizeDate(sets.dob.dob)
+  if (sets.address) props.addresses = [sets.address]
 
   return props
 }
@@ -133,7 +176,7 @@ export const find = (arr, filter) => {
   let result
   arr.some((el, i) => {
     const candidate = filter(el, i)
-    if (candidate) {
+    if (candidate != null) {
       return result = candidate
     }
   })
@@ -273,7 +316,7 @@ export const stubFromParsedStub = stub => {
 }
 
 export const validateProductOptions = (opts:ProductOptions):void => {
-  const { reports } = opts
+  const { reports, propertyMap } = opts
   if (!(reports && Array.isArray(reports) && reports.length)) {
     throw new Error('expected "reports" array in product options')
   }
@@ -282,6 +325,8 @@ export const validateProductOptions = (opts:ProductOptions):void => {
   if (bad) {
     throw new Error(`report "${bad}" is invalid. Supported reports are: ${REPORTS.join(', ')}`)
   }
+
+  // if (!propertyMap) throw new Error('expected "propertyMap"')
 }
 
 export const getFormStubs = application => (application.forms || [])
