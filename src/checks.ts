@@ -204,6 +204,12 @@ export default class Checks implements IOnfidoComponent {
       stubs.push(photoID)
     } else if (type === 'facial_similarity') {
       stubs.push(selfie)
+      if (report.result === 'clear') {
+        const { score } = report.properties
+        if (score != null) {
+          check.set('faceMatchConfidence', score)
+        }
+      }
     } else if (type === 'identity') {
       stubs.push(...applicantDetails)
     } else {
