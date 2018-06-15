@@ -125,7 +125,16 @@ export const getFormsToCreateApplicant = ({ models, forms, reports, propertyMap 
   }
 }
 
-const hasRequiredAddressProps = props => REQUIRED_ADDRESS_PROPS.every(prop => props[prop] != null)
+const hasRequiredAddressProps = props => {
+  const ok = REQUIRED_ADDRESS_PROPS.every(prop => props[prop] != null)
+  if (ok) {
+    if (props.country === 'USA') return !!props.state
+
+    return true
+  }
+
+  return false
+}
 
 export const getApplicantProps = ({ models, forms, propertyMap }):ApplicantProps => {
   const sets:any = APPLICANT_PROPERTY_SETS.reduce((sets, setName) => {
