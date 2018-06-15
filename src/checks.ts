@@ -206,8 +206,8 @@ export default class Checks implements IOnfidoComponent {
       stubs.push(selfie)
       if (report.result === 'clear') {
         const { score } = report.properties
-        if (score != null) {
-          check.set('faceMatchConfidence', score)
+        if (!isNaN(score)) {
+          check.set('faceMatchConfidence', Number(score))
         }
       }
     } else if (type === 'identity') {
