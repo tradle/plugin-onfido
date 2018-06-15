@@ -86,6 +86,8 @@ export default class Applicants implements IOnfidoComponent {
     const props = getApplicantProps({ models, forms, propertyMap })
     const { first_name, last_name, dob, addresses=[] } = props
     const needAddress = isAddressRequired(productOptions.reports)
+    if (!needAddress) addresses.length = 0
+
     if (!(first_name && last_name && dob && (addresses.length || !needAddress))) {
       return false
     }

@@ -13,7 +13,8 @@ import {
   PHOTO_ID,
   VERIFICATION,
   REPORTS,
-  PROPERTY_SETS
+  PROPERTY_SETS,
+  REQUIRED_ADDRESS_PROPS,
 } from './constants'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -124,6 +125,8 @@ export const getFormsToCreateApplicant = ({ models, forms, reports, propertyMap 
   }
 }
 
+const hasRequiredAddressProps = props => REQUIRED_ADDRESS_PROPS.every(prop => props[prop] != null)
+
 export const getApplicantProps = ({ models, forms, propertyMap }):ApplicantProps => {
   const sets:any = APPLICANT_PROPERTY_SETS.reduce((sets, setName) => {
     sets[setName] = PROPERTY_SETS[setName].reduce((fields, fieldName) => {
@@ -141,7 +144,9 @@ export const getApplicantProps = ({ models, forms, propertyMap }):ApplicantProps
   const props:ApplicantProps = {}
   if (sets.name) Object.assign(props, sets.name)
   if (sets.dob) props.dob = normalizeDate(sets.dob.dob)
-  if (sets.address) props.addresses = [sets.address]
+  if (sets.address && hasRequiredAddressProps(sets.address)) {
+    props.addresses = [sets.address]
+  }
 
   return props
 }

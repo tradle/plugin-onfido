@@ -23,9 +23,6 @@
   "building_number": [
     { "source": "tradle.onfido.Applicant", "property": "buildingNumber" }
   ],
-  "building_number": [
-    { "source": "tradle.onfido.Applicant", "property": "buildingNumber" }
-  ],
   "flat_number": [
     { "source": "tradle.onfido.Applicant", "property": "flatNumber" }
   ],
