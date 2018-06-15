@@ -18,7 +18,8 @@
   ],
   "country": [
     { "source": "tradle.onfido.Applicant", "property": ["country", "cca3"] },
-    { "source": "tradle.PhotoID", "property": ["country", "cca3"] }
+    { "source": "tradle.PhotoID", "property": ["country", "cca3"] },
+    { "source": "tradle.Address", "property": "country" }
   ],
   "building_number": [
     { "source": "tradle.onfido.Applicant", "property": "buildingNumber" }
@@ -33,10 +34,15 @@
     { "source": "tradle.onfido.Applicant", "property": "subStreet" }
   ],
   "town": [
-    { "source": "tradle.onfido.Applicant", "property": "town" }
+    { "source": "tradle.onfido.Applicant", "property": "town" },
+    { "source": "tradle.Address", "property": "city" }
+  ],
+  "state": [
+    { "source": "tradle.Address", "property": "region" }
   ],
   "postcode": [
-    { "source": "tradle.onfido.Applicant", "property": "postcode" }
+    { "source": "tradle.onfido.Applicant", "property": "postcode" },
+    { "source": "tradle.Address", "property": "postalCode" }
   ],
   "document": [
     { "source": "tradle.PhotoID", "property": "scan" }
