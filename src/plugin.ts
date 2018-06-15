@@ -592,7 +592,8 @@ export default class Onfido implements IOnfidoComponent {
     if (form) {
       if (type === form[TYPE]) return form
     } else if (req && req.payload && req.payload[TYPE] === type) {
-      return req.payload
+      form = _.cloneDeep(req.payload)
+      return await this.bot.resolveEmbeds(form)
     }
 
     const parsedStub = getLatestFormByType(application, type)
