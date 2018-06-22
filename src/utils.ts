@@ -276,7 +276,7 @@ export const getCompletedReports = ({ current, update }) => {
 }
 
 export const createOnfidoVerification = ({ applicant, form, report }) => {
-  const aspect = report.name === 'facial_similarity' ? 'facial similarity' : 'authenticity'
+  const aspect = report.name === 'facial_similarity' ? 'facial similarity' : 'document authenticity'
   const method:any = {
     [TYPE]: 'tradle.APIBasedVerificationMethod',
     api: {
@@ -364,16 +364,16 @@ export const getMessageForReports = (reports: string[], status?: string) => {
   const checks = `${titles.join(', ')}`
   const checkPhrase = reports.length > 1 ? ONE_OR_MORE : 'Check'
   if (status === 'pass') {
-    return `Checks PASSED: ${checks}`
+    return `Check(s) passed: ${checks}`
   }
 
   if (status === 'fail') {
-    return `${checkPhrase} FAILED: ${checks}`
+    return `${checkPhrase} failed: ${checks}`
   }
 
   if (status === 'error') {
-    return `${checkPhrase} hit an ERROR: ${checks}`
+    return `${checkPhrase} hit an error: ${checks}`
   }
 
-  return `${checkPhrase} are still pending: ${checks}`
+  return `${checkPhrase} pending: ${checks}`
 }
