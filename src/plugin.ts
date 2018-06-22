@@ -66,6 +66,8 @@ const ONFIDO_WEBHOOK_CONTEXT = {
   provider: 'onfido'
 }
 
+const PROVIDER_NAME = 'Onfido'
+
 export default class Onfido implements IOnfidoComponent {
   public applicants:Applicants
   public checks:Checks
@@ -196,6 +198,7 @@ export default class Onfido implements IOnfidoComponent {
     } else {
       const { reports } = this.getProductOptions(application.requestFor)
       props = {
+        provider: PROVIDER_NAME,
         message: utils.getMessageForReports(reports),
         reportsOrdered: getReportsOrderedEnumVals(reports),
         application: buildResource.stub({
