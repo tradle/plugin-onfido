@@ -355,25 +355,21 @@ export const getStatus = (onfidoResult: string) => {
   return 'error'
 }
 
-export const getMessageForReports = (reports: string[], status?: string) => {
-  const enumVals = onfidoModels.reportType.enum
-  const titles = reports.map(id => enumVals.find(val => val.id === id).title)
-
+export const getMessageForAspects = (aspects: string, status?: string) => {
   if (status) status = status.toLowerCase()
 
-  const checks = `${titles.join(', ')}`
-  const checkPhrase = reports.length > 1 ? ONE_OR_MORE : 'Check'
+  const checkPhrase = ONE_OR_MORE
   if (status === 'pass') {
-    return `Check(s) passed: ${checks}`
+    return `Check(s) passed: ${aspects}`
   }
 
   if (status === 'fail') {
-    return `${checkPhrase} failed: ${checks}`
+    return `${checkPhrase} failed: ${aspects}`
   }
 
   if (status === 'error') {
-    return `${checkPhrase} hit an error: ${checks}`
+    return `${checkPhrase} hit an error: ${aspects}`
   }
 
-  return `${checkPhrase} pending: ${checks}`
+  return `${checkPhrase} pending: ${aspects}`
 }

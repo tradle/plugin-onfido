@@ -31,7 +31,8 @@ import {
   APPLICATION,
   REPORTS,
   DEFAULT_REPORTS,
-  PROPERTY_SETS
+  PROPERTY_SETS,
+  REPORT_TO_ASPECT,
 } from './constants'
 
 import Errors from './errors'
@@ -197,10 +198,12 @@ export default class Onfido implements IOnfidoComponent {
       props = nonPending
     } else {
       const { reports } = this.getProductOptions(application.requestFor)
+      const aspects = getAspects(reports).join(', ')
       props = {
         provider: PROVIDER_NAME,
-        message: utils.getMessageForReports(reports),
+        message: utils.getMessageForAspects(aspects),
         reportsOrdered: getReportsOrderedEnumVals(reports),
+        aspects,
         application: buildResource.stub({
           models,
           model: models[APPLICATION],
@@ -682,3 +685,5 @@ const getReportsOrderedEnumVals = (reports: string[]) => reports.map(id => build
   model: onfidoModels.reportType,
   value: id
 }))
+
+const getAspects = (reports: string[]) => reports.map(report => REPORT_TO_ASPECT[report])

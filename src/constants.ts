@@ -38,6 +38,12 @@ const PROPERTY_SETS = {
   address: ADDRESS_PROPS
 }
 
+const REPORT_TO_ASPECT = {
+  document: 'document authenticity',
+  facialsimilarity: 'facial similarity',
+  identity: 'identity check',
+}
+
 export {
   // models
   IPROOV_SELFIE,
@@ -58,5 +64,6 @@ export {
   REPORTS,
   DEFAULT_REPORTS,
   PROPERTY_SETS,
-  REQUIRED_ADDRESS_PROPS
+  REQUIRED_ADDRESS_PROPS,
+  REPORT_TO_ASPECT,
 }

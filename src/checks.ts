@@ -15,7 +15,7 @@ import {
   parseReportURL,
   addLinks,
   getStatus,
-  getMessageForReports,
+  getMessageForAspects,
   getEnumValueId,
 } from './utils'
 
@@ -159,8 +159,8 @@ export default class Checks implements IOnfidoComponent {
       newCheckProps.onfidoResult = result
       newCheckProps.status = getStatus(result)
 
-      const reportsOrdered = check.get('reportsOrdered').map(getEnumValueId)
-      newCheckProps.message = getMessageForReports(reportsOrdered, newCheckProps.status)
+      const aspects = check.get('aspects')
+      newCheckProps.message = getMessageForAspects(aspects, newCheckProps.status)
     }
 
     check.set(newCheckProps)
