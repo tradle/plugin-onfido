@@ -28,7 +28,7 @@
     "@tradle/models-nz": "github:tradle/models-nz",
     "@tradle/models-onfido": "github:tradle/models-onfido#dev",
     "@tradle/models-products-bot": "github:tradle/models-products-bot",
-    "@types/node": "^8.0.51",
+    "@types/node": "~8.10.40",
     "husky": "^0.14.3",
     "sinon": "^4.1.2",
     "source-map-support": "^0.5.0",
